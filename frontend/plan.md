@@ -1,61 +1,107 @@
-# Frontend Implementation Plan
+# Kreato Frontend Master Implementation Plan
 
-This plan documents the roadmap and component breakdown for implementing the frontend based on the reference design. Implementation will begin only when explicitly instructed.
-
----
-
-## Scope & Constraints
-- Only work within `frontend/` and necessary frontend root configuration files (e.g. `tailwind.config.js`, `next.config.js`, `app/` if Next.js app router is configured).
-- Do not modify or touch backend or unrelated folders.
+> **Scope**: Exclusive to `frontend/**` and the root `app/**` Next.js App Router (only page/layout UI components).  
+> **Source of Truth**: `docs/PRD.md`, `docs/FEATURES.md`, `docs/RADAR_SPEC.md`, `docs/AI_PROMPTS.md`.  
+> **Visual Reference**: Clean 3-column light SaaS dashboard layout with pastel KPI summaries, floating search pill, dark active navigation, and live activity feed.
 
 ---
 
-## Phase 1: Setup & Design System Tokens
-1. **Theme & Tailwind Configuration**:
-   - Register custom colors (pastel lime, pastel teal, pastel coral, light backgrounds `#EEF3F6`, active dark nav `#1A1D1F`).
-   - Configure border radiuses (`rounded-2xl`, `rounded-3xl`).
-   - Define custom drop shadows matching the soft neumorphic/glassmorphic surface style.
-2. **Icon & Asset Integration**:
-   - Lucide icons or equivalent icon set for navigation, comms, search, and action buttons.
+## Architecture & Directory Structure
+```
+frontend/
+├── components/
+│   ├── layout/
+│   │   ├── AppShell.tsx               # Reusable 3-column container shell
+│   │   ├── Sidebar.tsx                # Kreato navigation + floating creator dock
+│   │   ├── Topbar.tsx                 # Universal search, shortcuts, simulation clock, integrations
+│   │   └── ActivityFeed.tsx           # Right column live creator activity feed
+│   ├── dashboard/
+│   │   ├── CreatorHeroCard.tsx        # Profile, niche, follower band, earnings & rate metrics
+│   │   ├── PastelSummaryCards.tsx     # Money at Risk (coral), Active Deals (teal), Recovered/Earnings (green)
+│   │   ├── DealPipelinePreview.tsx    # Live pipeline kanban preview
+│   │   └── UrgentAlertsCard.tsx       # Overdue invoices & exclusivity warnings
+│   ├── inbox/
+│   │   ├── DealIngestionModal.tsx     # Text paste / Screenshot OCR ingestion
+│   │   ├── MaskingPreview.tsx         # In-browser PII redaction token preview
+│   │   └── RedactionCanvas.tsx        # Client fallback redaction tool
+│   ├── deals/
+│   │   ├── DealCard.tsx               # Kanban deal card with risk chips
+│   │   ├── DealPipelineView.tsx       # Multi-stage Kanban (Incoming, Analyzing, Countered, Agreed)
+│   │   ├── DealDetailsEditor.tsx      # Interactive terms editor (deliverables, fee, usage, exclusivity)
+│   │   ├── BrandLedgerPanel.tsx       # Historical repeat brand analysis & payment reliability
+│   │   └── ExclusivityConflictAlert.tsx # Date & category collision banner
+│   ├── copilot/
+│   │   ├── MoneyLeakRadarCard.tsx     # Animated ₹ at risk counter with 5-part mathematical breakdown
+│   │   ├── WalkAwayLadder.tsx         # 3-tier matrix (Ideal, Acceptable, Walk-away)
+│   │   ├── CounterOfferEditor.tsx     # Gemini draft review (English / Hinglish) with WhatsApp/Mail/Copy triggers
+│   │   └── DealMemoPreview.tsx        # One-page PDF deal memo summary & public accept link
+│   ├── finance/
+│   │   ├── InvoiceGenerator.tsx       # GST calculation (CGST/SGST vs IGST) & SAC codes
+│   │   ├── UpiQrCodeModal.tsx         # Dynamic UPI QR code modal
+│   │   ├── PaymentAgingTracker.tsx    # Aging table with time-travel clock offset controls
+│   │   └── OverdueReminderModal.tsx   # Escalating payment follow-up drafter (Friendly, Firm, Final)
+│   └── ui/                            # Shared accessible primitives (modals, tabs, badges, tooltips)
+├── types/
+│   └── kreato.ts                      # Full TypeScript interfaces for Deals, Invoices, Radar, Profiles
+├── lib/
+│   ├── radarEngine.ts                 # Pure code calculation matching RADAR_SPEC.md exactly
+│   ├── ladderEngine.ts                # Deterministic 3-tier walk-away ladder calculation
+│   ├── gstEngine.ts                   # 18% GST intra/inter-state split calculation in integer paise
+│   └── maskUtils.ts                   # Client-side phone, email, and UPI VPA masking
+└── data/
+    └── mockKreatoData.ts              # Realistic Indian creator dataset (Mamaearth, Nykaa, Boat, etc.)
+```
 
 ---
 
-## Phase 2: Core Layout Architecture
-1. **Three-Column Dashboard Shell**:
-   - Left Sidebar: Navigation groups, collapsible sections, bottom floating dock with agent controls & mini-profile.
-   - Main Center Panel: Search bar, agent overview hero card, summary pastel cards, and listing cards carousel/grid.
-   - Right Aside: Integrations status, online agent stack, live timeline feed.
-2. **Responsive Handling**:
-   - Responsive collapsing on smaller screens (sidebar to drawer, right aside collapsible/tabbed).
+## Phase-by-Phase Roadmap
 
----
+### Phase 1: Core Engine & Data Foundations
+- [ ] Task 1.1: Create `frontend/types/kreato.ts` capturing all domain entities (CreatorProfile, Deal, Deliverable, RadarBreakdown, Invoice, BrandLedger).
+- [ ] Task 1.2: Implement `frontend/lib/radarEngine.ts` following `docs/RADAR_SPEC.md` (Benchmark gap, Usage rights surcharge, Payment delay cost, Exclusivity surcharge, Brand history penalty).
+- [ ] Task 1.3: Implement `frontend/lib/ladderEngine.ts` (Ideal, Acceptable, Walk-away calculations).
+- [ ] Task 1.4: Implement `frontend/lib/gstEngine.ts` (SAC 998365, intra-state CGST/SGST 9%+9% vs inter-state IGST 18% in integer paise).
+- [ ] Task 1.5: Populate `frontend/data/mockKreatoData.ts` with comprehensive creator business data for Indian creators (₹ INR, real brands, deliverable types).
 
-## Phase 3: Component Breakdown
-1. **Sidebar (`frontend/components/sidebar/`)**:
-   - `SidebarNav.tsx`: Main nav item list with dark active pill state.
-   - `AgentDock.tsx`: Floating action dock with mute/mic, audio, settings, and profile thumbnail.
-2. **Top Bar & Search (`frontend/components/header/`)**:
-   - `SearchBar.tsx`: Pill input with voice search icon and keyboard shortcut indicator.
-   - `HeaderActions.tsx`: Integration status badge and online users avatar group.
-3. **Hero & Metrics (`frontend/components/dashboard/`)**:
-   - `ProfileHeroCard.tsx`: User details, agency info, direct contact details, and KPI metrics with colored underline indicators.
-   - `SummaryCards.tsx`: Pastel metric blocks (Unassigned Leads, Valuation Leads, Potential Seller Leads).
-   - `ListingGrid.tsx` / `NewObjects.tsx`: Property preview cards with tags ("Sale", "Rental") and action overlays.
-4. **Live Activity Feed (`frontend/components/feed/`)**:
-   - `LiveFeed.tsx`: Activity stream container with reload trigger.
-   - `FeedItemProperty.tsx`: Property viewed event card with image and address.
-   - `FeedItemLead.tsx`: Lead action cards (calls, emails, assignment status).
+### Phase 2: Application Shell & Navigation
+- [ ] Task 2.1: Update `frontend/components/layout/Sidebar.tsx` to reflect Kreato branding, full navigation routes (Dashboard, Deal Inbox, Pipeline, Radar, Contracts, Invoices, Settings), and floating creator dock.
+- [ ] Task 2.2: Update `frontend/components/layout/Topbar.tsx` with search, simulation clock badge (Time-Travel controls: +30 Days, Reset), and creator status.
+- [ ] Task 2.3: Update `frontend/components/layout/ActivityFeed.tsx` for real-time creator updates (deal inquiries, payment alerts, memo acceptances).
+- [ ] Task 2.4: Build `frontend/components/layout/AppShell.tsx` responsive layout container.
 
----
+### Phase 3: Dashboard View
+- [ ] Task 3.1: Build `frontend/components/dashboard/CreatorHeroCard.tsx` (Creator info, niche, follower band, total earnings, active deals, live rates).
+- [ ] Task 3.2: Build `frontend/components/dashboard/PastelSummaryCards.tsx` (Money at Risk in Coral, Deals Active in Teal, Revenue Recovered in Lime).
+- [ ] Task 3.3: Build `frontend/components/dashboard/DealPipelinePreview.tsx` showing active deals in flight.
+- [ ] Task 3.4: Integrate with `app/dashboard/page.tsx` and `app/page.tsx`.
 
-## Phase 4: State & Mock Data
-1. Mock data models for agent profile, KPI stats, lead summaries, property objects, and live feed timeline items.
-2. Interactive states: dropdown time filter toggles ("This Month"), search focus, and navigation selection.
+### Phase 4: Deal Intake & Ingestion (`/inbox`)
+- [ ] Task 4.1: Build `DealIngestionModal.tsx` supporting:
+  - Text paste tab with live client PII masking preview (`[PHONE_1]`, `[EMAIL_1]`, `[UPI_1]`).
+  - Screenshot upload tab with OCR processing preview & Redaction Canvas fallback.
+- [ ] Task 4.2: Build `/inbox` route in `app/inbox/page.tsx`.
 
----
+### Phase 5: Deal Management & Pipeline (`/deals`)
+- [ ] Task 5.1: Build `DealPipelineView.tsx` with Kanban columns: `Incoming`, `Analyzing`, `Countered`, `Agreed`.
+- [ ] Task 5.2: Build `DealDetailsEditor.tsx` allowing interactive editing of deliverables, fee in ₹, usage license window, and exclusivity.
+- [ ] Task 5.3: Build `BrandLedgerPanel.tsx` showing past deals, average days late, and concessions.
+- [ ] Task 5.4: Build `ExclusivityConflictAlert.tsx` with calendar overlap warning.
+- [ ] Task 5.5: Connect to route `app/deals/[id]/page.tsx` and `app/deals/page.tsx`.
 
-## Status
-- [x] Design reference documented (`design.md`)
-- [x] Implementation plan created (`plan.md`)
-- [ ] *Waiting for user approval before starting implementation.*
+### Phase 6: Money Leak Radar & AI Deal Copilot
+- [ ] Task 6.1: Build `MoneyLeakRadarCard.tsx` with animated "₹ at risk" counter and expandable mathematical formula explanations.
+- [ ] Task 6.2: Build `WalkAwayLadder.tsx` displaying 3-tier cards (Ideal, Acceptable, Walk-away floor).
+- [ ] Task 6.3: Build `CounterOfferEditor.tsx` with English/Hinglish negotiation drafting, approval gates, and 1-click WhatsApp (`wa.me`) / Email (`mailto`) action buttons.
+- [ ] Task 6.4: Build `DealMemoPreview.tsx` with one-page PDF summary and public accept link copy (`/memo/[token]`).
 
+### Phase 7: GST Invoices, UPI & Payment Tracking (`/invoices`)
+- [ ] Task 7.1: Build `InvoiceGenerator.tsx` with sequential FY invoice number, supplier/brand GSTIN, SAC code, and automated tax calculations.
+- [ ] Task 7.2: Build `UpiQrCodeModal.tsx` generating instant scannable UPI payment QR.
+- [ ] Task 7.3: Build `PaymentAgingTracker.tsx` with effective date aging and simulated time-travel clock offset controls (+30 days, reset).
+- [ ] Task 7.4: Build `OverdueReminderModal.tsx` for escalating reminders (Friendly 1-7 days, Firm 8-21 days, Final 22+ days).
+- [ ] Task 7.5: Connect to route `app/invoices/page.tsx`.
+
+### Phase 8: Verification & Polish
+- [ ] Task 8.1: Run lint and compilation check on frontend.
+- [ ] Task 8.2: Verify responsive layouts (desktop 3-column down to mobile single-column drawer).
+- [ ] Task 8.3: Validate that no backend or database files were modified.

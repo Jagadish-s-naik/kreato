@@ -9,6 +9,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        canvas: "#EEF3F6",
+        darkpill: "#1A1D1F",
+        pastel: {
+          lime: "#D5EDB3",
+          "lime-text": "#3D581A",
+          teal: "#A8E6DC",
+          "teal-text": "#0F574E",
+          coral: "#F8B6B6",
+          "coral-text": "#752222",
+          mint: "#CDEFE3",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -43,7 +54,15 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+      boxShadow: {
+        soft: "0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02)",
+        card: "0 4px 20px 0 rgba(0, 0, 0, 0.03)",
+        floating: "0 12px 36px 0 rgba(0, 0, 0, 0.07)",
+      },
       borderRadius: {
+        "2.5xl": "1.25rem",
+        "3xl": "1.5rem",
+        "4xl": "2rem",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
@@ -55,4 +74,3 @@ module.exports = {
   },
   plugins: [require("tailwindcss-animate")],
 }
-
