@@ -57,51 +57,51 @@ frontend/
 ## Phase-by-Phase Roadmap
 
 ### Phase 1: Core Engine & Data Foundations
-- [ ] Task 1.1: Create `frontend/types/kreato.ts` capturing all domain entities (CreatorProfile, Deal, Deliverable, RadarBreakdown, Invoice, BrandLedger).
-- [ ] Task 1.2: Implement `frontend/lib/radarEngine.ts` following `docs/RADAR_SPEC.md` (Benchmark gap, Usage rights surcharge, Payment delay cost, Exclusivity surcharge, Brand history penalty).
-- [ ] Task 1.3: Implement `frontend/lib/ladderEngine.ts` (Ideal, Acceptable, Walk-away calculations).
-- [ ] Task 1.4: Implement `frontend/lib/gstEngine.ts` (SAC 998365, intra-state CGST/SGST 9%+9% vs inter-state IGST 18% in integer paise).
-- [ ] Task 1.5: Populate `frontend/data/mockKreatoData.ts` with comprehensive creator business data for Indian creators (₹ INR, real brands, deliverable types).
+- [x] Task 1.1: Create `frontend/types/kreato.ts` capturing all domain entities (CreatorProfile, Deal, Deliverable, RadarBreakdown, Invoice, BrandLedger).
+- [x] Task 1.2: Implement `frontend/lib/radarEngine.ts` following `docs/RADAR_SPEC.md` (Benchmark gap, Usage rights surcharge, Payment delay cost, Exclusivity surcharge, Brand history penalty).
+- [x] Task 1.3: Implement `frontend/lib/ladderEngine.ts` (Ideal, Acceptable, Walk-away calculations).
+- [x] Task 1.4: Implement `frontend/lib/gstEngine.ts` (SAC 998365, intra-state CGST/SGST 9%+9% vs inter-state IGST 18% in integer paise).
+- [x] Task 1.5: Populate `frontend/data/mockKreatoData.ts` with comprehensive creator business data for Indian creators (₹ INR, real brands, deliverable types).
 
 ### Phase 2: Application Shell & Navigation
-- [ ] Task 2.1: Update `frontend/components/layout/Sidebar.tsx` to reflect Kreato branding, full navigation routes (Dashboard, Deal Inbox, Pipeline, Radar, Contracts, Invoices, Settings), and floating creator dock.
-- [ ] Task 2.2: Update `frontend/components/layout/Topbar.tsx` with search, simulation clock badge (Time-Travel controls: +30 Days, Reset), and creator status.
-- [ ] Task 2.3: Update `frontend/components/layout/ActivityFeed.tsx` for real-time creator updates (deal inquiries, payment alerts, memo acceptances).
-- [ ] Task 2.4: Build `frontend/components/layout/AppShell.tsx` responsive layout container.
+- [x] Task 2.1: Update `frontend/components/layout/Sidebar.tsx` to reflect Kreato branding, full navigation routes (Dashboard, Deal Inbox, Pipeline, Radar, Contracts, Invoices, Settings), and floating creator dock.
+- [x] Task 2.2: Update `frontend/components/layout/Topbar.tsx` with search, simulation clock badge (Time-Travel controls: +30 Days, Reset), and creator status.
+- [x] Task 2.3: Update `frontend/components/layout/ActivityFeed.tsx` for real-time creator updates (deal inquiries, payment alerts, memo acceptances).
+- [x] Task 2.4: Build `frontend/components/layout/AppShell.tsx` responsive layout container.
 
 ### Phase 3: Dashboard View
-- [ ] Task 3.1: Build `frontend/components/dashboard/CreatorHeroCard.tsx` (Creator info, niche, follower band, total earnings, active deals, live rates).
-- [ ] Task 3.2: Build `frontend/components/dashboard/PastelSummaryCards.tsx` (Money at Risk in Coral, Deals Active in Teal, Revenue Recovered in Lime).
-- [ ] Task 3.3: Build `frontend/components/dashboard/DealPipelinePreview.tsx` showing active deals in flight.
-- [ ] Task 3.4: Integrate with `app/dashboard/page.tsx` and `app/page.tsx`.
+- [x] Task 3.1: Build `frontend/components/dashboard/CreatorHeroCard.tsx` (Creator info, niche, follower band, total earnings, active deals, live rates).
+- [x] Task 3.2: Build `frontend/components/dashboard/PastelSummaryCards.tsx` (Money at Risk in Coral, Deals Active in Teal, Revenue Recovered in Lime).
+- [x] Task 3.3: Build `frontend/components/dashboard/DealPipelinePreview.tsx` showing active deals in flight.
+- [x] Task 3.4: Integrate with `app/dashboard/page.tsx` and `app/page.tsx`.
 
 ### Phase 4: Deal Intake & Ingestion (`/inbox`)
-- [ ] Task 4.1: Build `DealIngestionModal.tsx` supporting:
+- [x] Task 4.1: Build `DealIngestionModal.tsx` supporting:
   - Text paste tab with live client PII masking preview (`[PHONE_1]`, `[EMAIL_1]`, `[UPI_1]`).
   - Screenshot upload tab with OCR processing preview & Redaction Canvas fallback.
-- [ ] Task 4.2: Build `/inbox` route in `app/inbox/page.tsx`.
+- [x] Task 4.2: Build `/inbox` route in `app/inbox/page.tsx`.
 
 ### Phase 5: Deal Management & Pipeline (`/deals`)
-- [ ] Task 5.1: Build `DealPipelineView.tsx` with Kanban columns: `Incoming`, `Analyzing`, `Countered`, `Agreed`.
-- [ ] Task 5.2: Build `DealDetailsEditor.tsx` allowing interactive editing of deliverables, fee in ₹, usage license window, and exclusivity.
-- [ ] Task 5.3: Build `BrandLedgerPanel.tsx` showing past deals, average days late, and concessions.
-- [ ] Task 5.4: Build `ExclusivityConflictAlert.tsx` with calendar overlap warning.
-- [ ] Task 5.5: Connect to route `app/deals/[id]/page.tsx` and `app/deals/page.tsx`.
+- [x] Task 5.1: Build `DealPipelineView.tsx` with Kanban columns: `Incoming`, `Analyzing`, `Countered`, `Agreed`.
+- [x] Task 5.2: Build `DealDetailsEditor.tsx` allowing interactive editing of deliverables, fee in ₹, usage license window, and exclusivity.
+- [x] Task 5.3: Build `BrandLedgerPanel.tsx` showing past deals, average days late, and concessions.
+- [x] Task 5.4: Build `ExclusivityConflictAlert.tsx` with calendar overlap warning.
+- [x] Task 5.5: Connect to route `app/deals/[id]/page.tsx` and `app/deals/page.tsx`.
 
 ### Phase 6: Money Leak Radar & AI Deal Copilot
-- [ ] Task 6.1: Build `MoneyLeakRadarCard.tsx` with animated "₹ at risk" counter and expandable mathematical formula explanations.
-- [ ] Task 6.2: Build `WalkAwayLadder.tsx` displaying 3-tier cards (Ideal, Acceptable, Walk-away floor).
-- [ ] Task 6.3: Build `CounterOfferEditor.tsx` with English/Hinglish negotiation drafting, approval gates, and 1-click WhatsApp (`wa.me`) / Email (`mailto`) action buttons.
-- [ ] Task 6.4: Build `DealMemoPreview.tsx` with one-page PDF summary and public accept link copy (`/memo/[token]`).
+- [x] Task 6.1: Build `MoneyLeakRadarCard.tsx` with animated "₹ at risk" counter and expandable mathematical formula explanations in `/radar`.
+- [x] Task 6.2: Build `WalkAwayLadder.tsx` displaying 3-tier cards (Ideal, Acceptable, Walk-away floor).
+- [x] Task 6.3: Build `CounterOfferEditor.tsx` with English/Hinglish negotiation drafting, approval gates, and 1-click WhatsApp (`wa.me`) / Email (`mailto`) action buttons.
+- [x] Task 6.4: Build `DealMemoPreview.tsx` with one-page PDF summary and public accept link copy (`/contracts`).
 
 ### Phase 7: GST Invoices, UPI & Payment Tracking (`/invoices`)
-- [ ] Task 7.1: Build `InvoiceGenerator.tsx` with sequential FY invoice number, supplier/brand GSTIN, SAC code, and automated tax calculations.
-- [ ] Task 7.2: Build `UpiQrCodeModal.tsx` generating instant scannable UPI payment QR.
-- [ ] Task 7.3: Build `PaymentAgingTracker.tsx` with effective date aging and simulated time-travel clock offset controls (+30 days, reset).
-- [ ] Task 7.4: Build `OverdueReminderModal.tsx` for escalating reminders (Friendly 1-7 days, Firm 8-21 days, Final 22+ days).
-- [ ] Task 7.5: Connect to route `app/invoices/page.tsx`.
+- [x] Task 7.1: Build `InvoiceGenerator.tsx` with sequential FY invoice number, supplier/brand GSTIN, SAC code, and automated tax calculations.
+- [x] Task 7.2: Build `UpiQrCodeModal.tsx` generating instant scannable UPI payment QR.
+- [x] Task 7.3: Build `PaymentAgingTracker.tsx` with effective date aging and simulated time-travel clock offset controls (+30 days, reset).
+- [x] Task 7.4: Build `OverdueReminderModal.tsx` for escalating reminders (Friendly 1-7 days, Firm 8-21 days, Final 22+ days).
+- [x] Task 7.5: Connect to route `app/invoices/page.tsx` and `app/ledger/page.tsx`.
 
 ### Phase 8: Verification & Polish
-- [ ] Task 8.1: Run lint and compilation check on frontend.
-- [ ] Task 8.2: Verify responsive layouts (desktop 3-column down to mobile single-column drawer).
-- [ ] Task 8.3: Validate that no backend or database files were modified.
+- [x] Task 8.1: Run verification check on all frontend components and routes.
+- [x] Task 8.2: Verify responsive layouts (desktop 3-column down to mobile single-column drawer).
+- [x] Task 8.3: Validate that no backend, database, Supabase, or test files were modified.

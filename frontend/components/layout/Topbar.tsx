@@ -1,10 +1,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Mic, Command, Clock, FastForward, RotateCcw } from "lucide-react";
+import {
+  Search,
+  Command,
+  Clock,
+  FastForward,
+  RotateCcw,
+  Menu,
+  Bell,
+} from "lucide-react";
 import { mockCreatorProfile } from "@/frontend/data/mockKreatoData";
 
-export const Topbar: React.FC = () => {
+interface TopbarProps {
+  onOpenMobileMenu?: () => void;
+}
+
+export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileMenu }) => {
   const [simOffset, setSimOffset] = useState(mockCreatorProfile.simDaysOffset);
 
   const handleAdvance30Days = () => {
@@ -16,70 +28,70 @@ export const Topbar: React.FC = () => {
   };
 
   return (
-    <header className="flex items-center justify-between gap-4 py-3 px-2">
-      {/* Search Bar Floating Pill */}
-      <div className="relative w-72 md:w-96">
-        <div className="flex items-center bg-white rounded-full px-4 py-2.5 shadow-soft border border-gray-100">
-          <Search className="w-4 h-4 text-gray-400 mr-2.5 shrink-0" />
-          <input
-            type="text"
-            placeholder="Search deals, brands, invoices..."
-            className="w-full text-xs md:text-sm bg-transparent outline-none text-gray-800 placeholder-gray-400"
-          />
-          <div className="flex items-center gap-1.5 ml-2 text-gray-400">
-            <span className="text-[10px] font-medium bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 flex items-center gap-0.5">
-              <Command className="w-3 h-3" /> K
-            </span>
-            <button className="hover:text-gray-600 transition-colors">
-              <Mic className="w-3.5 h-3.5" />
-            </button>
+    <header className="flex items-center justify-between gap-3 py-2 px-1">
+      {/* Mobile Hamburger & Search Input */}
+      <div className="flex items-center gap-2.5 flex-1 max-w-md">
+        {onOpenMobileMenu && (
+          <button
+            onClick={onOpenMobileMenu}
+            className="lg:hidden p-2 bg-white rounded-full shadow-card border border-gray-100 text-gray-700 hover:text-black transition-colors shrink-0"
+            title="Open navigation"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+        )}
+
+        <div className="flex-1 relative">
+          <div className="flex items-center bg-white rounded-full px-3.5 py-2 shadow-soft border border-gray-100/80">
+            <Search className="w-3.5 h-3.5 text-gray-400 mr-2 shrink-0" />
+            <input
+              type="text"
+              placeholder="Search deals, brands, invoices..."
+              className="w-full text-xs bg-transparent outline-none text-gray-800 placeholder-gray-400"
+            />
+            <div className="hidden sm:flex items-center gap-1 ml-2 text-gray-400">
+              <span className="text-[9px] font-bold bg-gray-50 border border-gray-200/80 rounded px-1.5 py-0.5">
+                ⌘K
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Right Controls: Time-Travel Clock Simulator & Status */}
-      <div className="flex items-center gap-3">
-        {/* Time-Travel Demo Control */}
-        <div className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 shadow-soft border border-gray-100">
-          <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-600 pr-1.5 border-r border-gray-200">
-            <Clock className="w-3.5 h-3.5 text-indigo-600" />
-            <span>
-              {simOffset === 0 ? "Live Clock (IST)" : `Sim +${simOffset}d`}
+      {/* Right Controls: Time-Travel Simulator Clock & Notifications */}
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Time-Travel Clock Demo Controller */}
+        <div className="flex items-center gap-1.5 bg-white rounded-full px-2.5 py-1.5 shadow-soft border border-gray-100">
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-700 pr-1.5 border-r border-gray-100">
+            <Clock className="w-3 h-3 text-indigo-600" />
+            <span className="hidden sm:inline">
+              {simOffset === 0 ? "Today" : `+${simOffset}d`}
             </span>
           </div>
           <button
             onClick={handleAdvance30Days}
-            className="text-[10px] font-bold px-2 py-0.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full flex items-center gap-1 transition-colors"
-            title="Simulate 30 days passing"
+            className="text-[10px] font-bold px-2 py-0.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full flex items-center gap-0.5 transition-colors"
+            title="Advance 30 days"
           >
-            <FastForward className="w-3 h-3" /> +30d
+            <FastForward className="w-2.5 h-2.5" /> +30d
           </button>
           {simOffset > 0 && (
             <button
               onClick={handleResetClock}
-              className="p-1 hover:bg-gray-100 text-gray-500 rounded-full transition-colors"
-              title="Reset to today"
+              className="p-1 hover:bg-gray-100 text-gray-400 hover:text-gray-600 rounded-full transition-colors"
+              title="Reset clock"
             >
-              <RotateCcw className="w-3 h-3" />
+              <RotateCcw className="w-2.5 h-2.5" />
             </button>
           )}
         </div>
 
-        {/* Channel Indicators */}
-        <div className="hidden sm:flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 shadow-soft border border-gray-100">
-          <span className="text-[11px] font-medium text-gray-500">Channels:</span>
-          <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-[9px] font-bold flex items-center justify-center" title="WhatsApp Connected">
-            WA
-          </span>
-          <span className="w-5 h-5 rounded-full bg-pink-500 text-white text-[9px] font-bold flex items-center justify-center" title="Instagram DMs Connected">
-            IG
-          </span>
-          <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center" title="Gmail Connected">
-            GM
-          </span>
-        </div>
+        {/* Notifications Icon Button */}
+        <button className="relative w-8 h-8 rounded-full bg-white shadow-soft border border-gray-100 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
+          <Bell className="w-3.5 h-3.5" />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full" />
+        </button>
       </div>
     </header>
   );
 };
-

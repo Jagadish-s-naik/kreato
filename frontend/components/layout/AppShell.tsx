@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { ActivityFeed } from "./ActivityFeed";
@@ -12,23 +12,42 @@ interface AppShellProps {
 
 export const AppShell: React.FC<AppShellProps> = ({
   children,
-  showFeed = true,
+  showFeed = false, // Contextual display: default clean on deep workflows, open on dashboard
 }) => {
-  return (
-    <div className="min-h-screen bg-canvas flex justify-center text-gray-900 font-sans antialiased p-3 sm:p-5">
-      <div className="w-full max-w-[1440px] flex flex-col md:flex-row gap-6">
-        {/* Left Column: Navigation Sidebar */}
-        <Sidebar />
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-        {/* Center Main Workspace */}
+  return (
+    <div className="min-h-screen bg-canvas flex justify-center text-gray-900 font-sans antialiased p-2 sm:p-4 lg:p-5">
+      <div className="w-full max-w-[1536px] flex flex-col lg:flex-row gap-5 relative">
+        {/* Desktop Sidebar (Fixed 240px) */}
+        <div className="hidden lg:block">
+          <Sidebar />
+        </div>
+
+        {/* Mobile Sidebar Touch Drawer */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden flex">
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            {/* Slide-out Drawer Panel */}
+            <div className="relative w-64 max-w-[80vw] bg-canvas h-full shadow-floating p-2 z-10 flex flex-col">
+              <Sidebar onCloseMobile={() => setMobileMenuOpen(false)} />
+            </div>
+          </div>
+        )}
+
+        {/* Center Main Content Area */}
         <main className="flex-1 flex flex-col min-w-0">
-          <Topbar />
-          <div className="flex-1 mt-2">{children}</div>
+          <Topbar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+          <div className="flex-1 mt-2.5 space-y-5">{children}</div>
         </main>
 
-        {/* Right Column: Live Feed */}
+        {/* Right Activity Feed (Shown only on large desktop when enabled) */}
         {showFeed && (
-          <div className="hidden xl:block">
+          <div className="hidden 2xl:block">
             <ActivityFeed />
           </div>
         )}
@@ -36,4 +55,3 @@ export const AppShell: React.FC<AppShellProps> = ({
     </div>
   );
 };
-

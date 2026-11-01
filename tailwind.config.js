@@ -9,15 +9,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        canvas: "#EEF3F6",
-        darkpill: "#1A1D1F",
+        canvas: "#F0F4F7",
+        surface: "#F5F9FA",
+        darkpill: "#000305",
+        brandtext: "#484C4D",
+        cardborder: "#EAF2F4",
         pastel: {
-          lime: "#D5EDB3",
-          "lime-text": "#3D581A",
-          teal: "#A8E6DC",
-          "teal-text": "#0F574E",
-          coral: "#F8B6B6",
-          "coral-text": "#752222",
+          lime: "#DAF4AA",
+          "lime-text": "#2D4B13",
+          teal: "#96D7CF",
+          "teal-text": "#0E4A42",
+          coral: "#F1B4B9",
+          "coral-text": "#702228",
           mint: "#CDEFE3",
         },
         border: "hsl(var(--border))",
@@ -55,9 +58,10 @@ module.exports = {
         },
       },
       boxShadow: {
-        soft: "0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02)",
-        card: "0 4px 20px 0 rgba(0, 0, 0, 0.03)",
-        floating: "0 12px 36px 0 rgba(0, 0, 0, 0.07)",
+        soft: "0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02)",
+        card: "0 1px 3px 0 rgba(0, 0, 0, 0.03)",
+        floating: "0 4px 16px -2px rgba(0, 0, 0, 0.06)",
+        none: "none",
       },
       borderRadius: {
         "2.5xl": "1.25rem",

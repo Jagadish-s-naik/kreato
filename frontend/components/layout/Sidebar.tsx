@@ -11,13 +11,11 @@ import {
   FileCheck,
   Receipt,
   BookOpen,
-  Headphones,
-  Mic,
   Bell,
   Settings,
-  MoreVertical,
   Shield,
   Sparkles,
+  X,
 } from "lucide-react";
 import { mockCreatorProfile } from "@/frontend/data/mockKreatoData";
 
@@ -30,7 +28,11 @@ interface NavItem {
   badgeColor?: string;
 }
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  onCloseMobile?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
   const pathname = usePathname();
 
   const coreNav: NavItem[] = [
@@ -49,7 +51,7 @@ export const Sidebar: React.FC = () => {
       label: "Money Leak Radar",
       href: "/radar",
       icon: Radar,
-      badge: "₹ Risk",
+      badge: "Risk",
       badgeColor: "bg-pastel-coral text-red-900",
     },
   ];
@@ -61,31 +63,45 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 flex flex-col justify-between h-full py-6 px-4 bg-transparent select-none shrink-0">
-      {/* Top Kreato Brand Logo */}
-      <div className="flex items-center gap-3 px-3 mb-8">
-        <div className="w-9 h-9 rounded-2xl bg-[#000305] flex items-center justify-center text-white shadow-card">
-          <Shield className="w-5 h-5 text-pastel-lime" />
-        </div>
-        <div>
-          <span className="font-extrabold text-xl text-gray-900 tracking-tight block leading-none">
-            Kreato
-          </span>
-          <span className="text-[10px] text-gray-400 font-medium tracking-wide">
-            Creator Income Shield
-          </span>
-        </div>
-      </div>
-
-      {/* Navigation Sections */}
-      <div className="flex-1 overflow-y-auto space-y-6 pr-1">
-        {/* Core Menu */}
-        <div>
-          <div className="flex items-center justify-between px-3 mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-              Core Workflow
+    <aside className="w-60 flex flex-col justify-between h-full py-5 px-3 bg-transparent select-none shrink-0">
+      {/* Brand Header & Mobile Close */}
+      <div className="flex items-center justify-between px-2 mb-6">
+        <Link
+          href="/dashboard"
+          onClick={onCloseMobile}
+          className="flex items-center gap-2.5 group"
+        >
+          <div className="w-8 h-8 rounded-xl bg-[#000305] flex items-center justify-center text-white shadow-card transition-transform group-hover:scale-105">
+            <Shield className="w-4 h-4 text-pastel-lime" />
+          </div>
+          <div>
+            <span className="font-extrabold text-base text-gray-900 tracking-tight block leading-tight">
+              Kreato
+            </span>
+            <span className="text-[10px] text-gray-400 font-medium tracking-wide">
+              Income Defense
             </span>
           </div>
+        </Link>
+
+        {onCloseMobile && (
+          <button
+            onClick={onCloseMobile}
+            className="lg:hidden p-1.5 rounded-full hover:bg-gray-200/60 text-gray-500 transition-colors"
+            title="Close menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Nav Lists */}
+      <div className="flex-1 overflow-y-auto space-y-5 pr-0.5">
+        {/* Core Menu */}
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 mb-1.5 block">
+            Core Workflow
+          </span>
           <nav className="space-y-1">
             {coreNav.map((item) => {
               const Icon = item.icon;
@@ -96,19 +112,24 @@ export const Sidebar: React.FC = () => {
                 <Link
                   key={item.id}
                   href={item.href}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
+                  onClick={onCloseMobile}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-semibold transition-all ${
                     isActive
                       ? "bg-[#000305] text-white shadow-soft"
                       : "text-gray-600 hover:text-gray-900 hover:bg-white/70"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${isActive ? "text-pastel-lime" : "text-gray-500"}`} />
+                  <div className="flex items-center gap-2.5">
+                    <Icon
+                      className={`w-4 h-4 ${
+                        isActive ? "text-pastel-lime" : "text-gray-500"
+                      }`}
+                    />
                     <span>{item.label}</span>
                   </div>
                   {item.badge && (
                     <span
-                      className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
                         isActive ? "bg-white/20 text-white" : item.badgeColor
                       }`}
                     >
@@ -121,13 +142,11 @@ export const Sidebar: React.FC = () => {
           </nav>
         </div>
 
-        {/* Financial & Legal Protection */}
+        {/* Income Defense */}
         <div>
-          <div className="flex items-center justify-between px-3 mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-              Income Defense
-            </span>
-          </div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 mb-1.5 block">
+            Income Defense
+          </span>
           <nav className="space-y-1">
             {financialNav.map((item) => {
               const Icon = item.icon;
@@ -136,13 +155,18 @@ export const Sidebar: React.FC = () => {
                 <Link
                   key={item.id}
                   href={item.href}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
+                  onClick={onCloseMobile}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-2xl text-xs font-semibold transition-all ${
                     isActive
                       ? "bg-[#000305] text-white shadow-soft"
                       : "text-gray-600 hover:text-gray-900 hover:bg-white/70"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-pastel-lime" : "text-gray-500"}`} />
+                  <Icon
+                    className={`w-4 h-4 ${
+                      isActive ? "text-pastel-lime" : "text-gray-500"
+                    }`}
+                  />
                   <span>{item.label}</span>
                 </Link>
               );
@@ -150,50 +174,30 @@ export const Sidebar: React.FC = () => {
           </nav>
         </div>
 
-        {/* AI Copilot Badge Card */}
-        <div className="mx-1 p-3.5 rounded-2xl bg-gradient-to-br from-white to-[#F5F9FA] border border-white/80 shadow-card">
-          <div className="flex items-center gap-2 mb-1.5">
+        {/* Copilot Mini Banner */}
+        <div className="p-3 rounded-2xl bg-white/90 border border-white/80 shadow-card">
+          <div className="flex items-center gap-1.5 mb-1">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="text-xs font-bold text-gray-900">Kreato Copilot</span>
+            <span className="text-[11px] font-bold text-gray-900">
+              Copilot Active
+            </span>
           </div>
-          <p className="text-[11px] text-gray-500 leading-snug">
-            Deterministic benchmark defense & client PII masked negotiation drafter.
+          <p className="text-[10px] text-gray-500 leading-snug">
+            Deterministic formulas guarding against perpetual rights & delay traps.
           </p>
         </div>
       </div>
 
-      {/* Floating Bottom Creator Dock */}
-      <div className="mt-4 pt-3">
-        <div className="bg-white/95 backdrop-blur-md rounded-3xl p-3 shadow-soft border border-white/80">
-          {/* Quick Action Icons Bar */}
-          <div className="flex items-center justify-between px-2 pb-2 mb-2 border-b border-gray-100 text-gray-500">
-            <button className="p-1.5 hover:bg-gray-100 rounded-full transition-colors" title="Support">
-              <Headphones className="w-3.5 h-3.5" />
-            </button>
-            <button className="p-1.5 hover:bg-gray-100 rounded-full transition-colors" title="Voice Notes">
-              <Mic className="w-3.5 h-3.5" />
-            </button>
-            <div className="relative">
-              <button className="p-1.5 hover:bg-gray-100 rounded-full transition-colors" title="Alerts">
-                <Bell className="w-3.5 h-3.5" />
-              </button>
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                1
-              </span>
-            </div>
-            <button className="p-1.5 hover:bg-gray-100 rounded-full transition-colors" title="Settings">
-              <Settings className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Mini Profile */}
-          <div className="flex items-center gap-2.5 px-1">
+      {/* Profile Mini Card at Bottom */}
+      <div className="mt-3 pt-2">
+        <div className="bg-white/95 rounded-2xl p-2.5 shadow-soft border border-white/80 flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
             <img
               src={mockCreatorProfile.avatarUrl}
               alt={mockCreatorProfile.name}
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-xs"
+              className="w-7 h-7 rounded-full object-cover ring-1 ring-gray-100"
             />
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0">
               <p className="text-xs font-bold text-gray-900 truncate">
                 {mockCreatorProfile.name}
               </p>
@@ -201,8 +205,13 @@ export const Sidebar: React.FC = () => {
                 {mockCreatorProfile.handle}
               </p>
             </div>
-            <button className="text-gray-400 hover:text-gray-700 p-1">
-              <MoreVertical className="w-3.5 h-3.5" />
+          </div>
+          <div className="flex items-center gap-1 text-gray-400">
+            <button
+              className="p-1 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Settings"
+            >
+              <Settings className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -210,4 +219,3 @@ export const Sidebar: React.FC = () => {
     </aside>
   );
 };
-
