@@ -59,6 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
     { id: "contracts", label: "Deal Memos", href: "/contracts", icon: FileCheck },
     { id: "invoices", label: "Invoices & Payments", href: "/invoices", icon: Receipt },
     { id: "brand-ledger", label: "Brand Ledger", href: "/ledger", icon: BookOpen },
+    { id: "settings", label: "Settings", href: "/settings", icon: Settings },
   ];
 
   return (
@@ -210,12 +211,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
             </div>
           </div>
           <div className="flex items-center gap-1 text-gray-400">
-            <button
+            <Link
+              href="/settings"
               className="p-1 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               title="Settings"
             >
               <Settings className="w-3.5 h-3.5" />
-            </button>
+            </Link>
           </div>
         </div>
       </div>

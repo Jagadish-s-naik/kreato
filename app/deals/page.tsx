@@ -1,22 +1,44 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppShell } from "@/frontend/components/layout/AppShell";
-import { mockDeals } from "@/frontend/data/mockKreatoData";
-import { DealStatus } from "@/frontend/types/kreato";
 import Link from "next/link";
-import { Plus, Clock, AlertTriangle } from "lucide-react";
+import { Plus, Clock, AlertTriangle, RefreshCw } from "lucide-react";
 
-const COLUMNS: { id: DealStatus; label: string }[] = [
-  { id: "incoming", label: "Incoming Inquiries" },
-  { id: "analyzing", label: "Under Analysis" },
-  { id: "countered", label: "Counter Offered" },
+type DealStage = "new" | "negotiating" | "agreed" | "invoiced" | "paid";
+
+const STAGES: { id: DealStage; label: string }[] = [
+  { id: "new", label: "Incoming Inquiries" },
+  { id: "negotiating", label: "Under Negotiation" },
   { id: "agreed", label: "Agreed / Memos" },
+  { id: "invoiced", label: "Invoiced" },
+  { id: "paid", label: "Settled / Paid" },
 ];
 
 export default function DealPipelinePage() {
-  const [deals, setDeals] = useState(mockDeals);
-  const [activeTab, setActiveTab] = useState<DealStatus>("incoming");
+  const [deals, setDeals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<DealStage>("new");
+
+  useEffect(() => {
+    async function loadDeals() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/deals");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            setDeals(json.data);
+          }
+        }
+      } catch (err) {
+        console.error("Deals load error:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadDeals();
+  }, []);
 
   return (
     <AppShell showFeed={false}>
@@ -40,126 +62,91 @@ export default function DealPipelinePage() {
           </Link>
         </div>
 
-        {/* Mobile Tabbed Stage Selector (< md) */}
+        {/* Mobile Tabbed Stage Selector */}
         <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-1">
-          {COLUMNS.map((col) => {
+          {STAGES.map((col) => {
             const count = deals.filter((d) => d.status === col.id).length;
             const isActive = activeTab === col.id;
             return (
               <button
                 key={col.id}
                 onClick={() => setActiveTab(col.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all ${
                   isActive
-                    ? "bg-[#000305] text-white"
-                    : "bg-[#F5F9FA] text-gray-600 border border-[#EAF2F4]"
+                    ? "bg-[#000305] text-white shadow-soft"
+                    : "bg-white text-gray-600 hover:text-gray-900 border border-[#EAF2F4]"
                 }`}
               >
-                <span>{col.label}</span>
-                <span className="w-4 h-4 rounded-full bg-white/20 text-[10px] flex items-center justify-center">
-                  {count}
-                </span>
+                {col.label} ({count})
               </button>
             );
           })}
         </div>
 
-        {/* Desktop Kanban Board */}
-        <div className="hidden md:grid md:grid-cols-4 gap-3.5 items-start">
-          {COLUMNS.map((col) => {
-            const columnDeals = deals.filter((d) => d.status === col.id);
-            return (
-              <div
-                key={col.id}
-                className="bg-[#F5F9FA] rounded-3xl p-3.5 border border-[#EAF2F4] flex flex-col min-h-[340px]"
-              >
-                {/* Column Header */}
-                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-[#EAF2F4]">
-                  <span className="text-xs font-bold text-gray-800 truncate">
-                    {col.label}
-                  </span>
-                  <span className="w-5 h-5 rounded-full bg-white text-gray-600 text-[10px] font-bold flex items-center justify-center border border-[#EAF2F4] shrink-0">
-                    {columnDeals.length}
-                  </span>
-                </div>
+        {/* Desktop Kanban / Multi-Column View */}
+        {loading ? (
+          <div className="p-16 text-center text-xs text-slate-400">
+            <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-500" />
+            Loading deal pipeline...
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            {STAGES.map((col) => {
+              const stageDeals = deals.filter((d) => d.status === col.id);
+              return (
+                <div
+                  key={col.id}
+                  className={`flex flex-col bg-white rounded-3xl p-3 border border-[#EAF2F4] min-h-[300px] ${
+                    activeTab !== col.id ? "hidden md:flex" : "flex"
+                  }`}
+                >
+                  <div className="flex items-center justify-between px-2 py-1.5 mb-2 border-b border-gray-100">
+                    <span className="text-xs font-extrabold text-gray-800">
+                      {col.label}
+                    </span>
+                    <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                      {stageDeals.length}
+                    </span>
+                  </div>
 
-                {/* Cards List */}
-                <div className="space-y-2.5 flex-1">
-                  {columnDeals.length === 0 ? (
-                    <div className="h-32 flex flex-col items-center justify-center text-center p-3 text-gray-400">
-                      <p className="text-[11px]">No deals in this stage</p>
-                    </div>
-                  ) : (
-                    columnDeals.map((deal) => (
-                      <Link
-                        key={deal.id}
-                        href={`/deals/${deal.id}`}
-                        className="p-3.5 rounded-2xl bg-white border border-[#EAF2F4] hover:border-gray-300 transition-all block group"
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
-                            {deal.brandName}
-                          </span>
-                          <span className="text-[10px] text-gray-400 shrink-0">
-                            {deal.category.split(" ")[0]}
-                          </span>
-                        </div>
-
-                        <div className="text-sm font-extrabold text-gray-900 my-1">
-                          ₹{(deal.feePaise / 100).toLocaleString("en-IN")}
-                        </div>
-
-                        <div className="flex items-center gap-1 text-[10px] text-gray-500 mt-2">
-                          <Clock className="w-3 h-3 text-gray-400 shrink-0" />
-                          <span>Due {deal.deadline}</span>
-                        </div>
-
-                        {/* FIXED: Content-sized warning chip instead of stretched banner */}
-                        {deal.riskyQuotes.length > 0 && (
-                          <div className="mt-2.5">
-                            <span className="inline-flex items-center gap-1 w-fit px-2 py-0.5 bg-[#F1B4B9]/20 text-[#702228] border border-[#F1B4B9]/40 rounded-lg text-[9px] font-semibold">
-                              <AlertTriangle className="w-2.5 h-2.5 text-[#702228] shrink-0" />
-                              <span>Perpetual terms detected</span>
+                  <div className="space-y-2 flex-1">
+                    {stageDeals.length === 0 ? (
+                      <div className="text-center py-8 text-[11px] text-gray-400">
+                        No deals in this stage
+                      </div>
+                    ) : (
+                      stageDeals.map((deal) => (
+                        <Link
+                          key={deal.id}
+                          href={`/deals/${deal.id}`}
+                          className="block p-3 rounded-2xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/60 shadow-xs transition-all hover:scale-[1.01]"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-extrabold text-xs text-slate-900 truncate">
+                              {deal.brand_name}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              Net-{deal.payment_terms_days || 30}
                             </span>
                           </div>
-                        )}
-                      </Link>
-                    ))
-                  )}
+                          <div className="text-sm font-black text-slate-900">
+                            ₹{((deal.fee_paise || 0) / 100).toLocaleString("en-IN")}
+                          </div>
+                          {deal.usage_rights === "perpetual" && (
+                            <div className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
+                              <AlertTriangle className="w-3 h-3 text-rose-600" />
+                              <span>Perpetual terms</span>
+                            </div>
+                          )}
+                        </Link>
+                      ))
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Mobile Tabbed View Content (< md) */}
-        <div className="md:hidden space-y-2.5">
-          {deals
-            .filter((d) => d.status === activeTab)
-            .map((deal) => (
-              <Link
-                key={deal.id}
-                href={`/deals/${deal.id}`}
-                className="p-4 rounded-3xl bg-white border border-[#EAF2F4] block"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-bold text-gray-900">
-                    {deal.brandName}
-                  </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pastel-coral text-red-900 capitalize">
-                    {deal.status}
-                  </span>
-                </div>
-                <div className="text-base font-extrabold text-gray-900 my-1">
-                  ₹{(deal.feePaise / 100).toLocaleString("en-IN")}
-                </div>
-                <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
-                  <Clock className="w-3.5 h-3.5 text-gray-400" />
-                  <span>Due {deal.deadline} • Net-{deal.paymentTermsDays}d</span>
-                </div>
-              </Link>
-            ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </AppShell>
   );

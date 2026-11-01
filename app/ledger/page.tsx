@@ -1,14 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppShell } from "@/frontend/components/layout/AppShell";
-import { mockBrandLedgers } from "@/frontend/data/mockKreatoData";
-import { BookOpen, Search } from "lucide-react";
+import { BookOpen, Search, ShieldCheck, AlertTriangle, Clock, RefreshCw } from "lucide-react";
 
 export default function BrandLedgerPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const ledgers = Object.values(mockBrandLedgers).filter((b) =>
-    b.brandName.toLowerCase().includes(searchTerm.toLowerCase())
+  const [ledgers, setLedgers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadLedger() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/brand-ledger");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            setLedgers(json.data);
+          }
+        }
+      } catch (err) {
+        console.error("Ledger fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadLedger();
+  }, []);
+
+  const filtered = ledgers.filter((b) =>
+    (b.brand_name || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -24,10 +46,6 @@ export default function BrandLedgerPage() {
               Historical memory for solo creators. Track repeat deals, payment speeds, and past concessions.
             </p>
           </div>
-
-          <button className="self-start sm:self-auto px-4 py-2 bg-white hover:bg-gray-50 text-gray-800 text-xs font-bold rounded-full border border-[#EAF2F4] shadow-xs transition-colors">
-            Load Demo History
-          </button>
         </div>
 
         {/* Brand Search Bar */}
@@ -45,84 +63,70 @@ export default function BrandLedgerPage() {
         </div>
 
         {/* Brand Ledger Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {ledgers.map((brand) => (
-            <div
-              key={brand.brandKey}
-              className="bg-white rounded-3xl p-5 shadow-card border border-[#EAF2F4] space-y-3.5"
-            >
-              <div className="flex items-center justify-between pb-2.5 border-b border-[#EAF2F4]">
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900">
-                    {brand.brandName}
-                  </h3>
-                  <span className="text-[10px] text-gray-400 font-mono">
-                    ID: {brand.brandKey}
+        {loading ? (
+          <div className="p-12 text-center text-xs text-slate-400">
+            <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-500" />
+            Loading Brand Ledger...
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-white rounded-3xl p-8 border border-slate-200/80 text-center text-xs text-slate-500">
+            No brand history found yet. Ingest your first brand deal to begin building your Personal Brand Ledger.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filtered.map((brand) => (
+              <div
+                key={brand.brand_slug || brand.brand_name}
+                className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-xs space-y-4"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div>
+                    <h3 className="font-extrabold text-sm text-slate-900">
+                      {brand.brand_name}
+                    </h3>
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      {brand.total_deals || 1} deal(s) completed
+                    </span>
+                  </div>
+                  <span
+                    className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
+                      (brand.avg_days_late || 0) > 15
+                        ? "bg-rose-50 text-rose-800 border border-rose-200"
+                        : "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                    }`}
+                  >
+                    {(brand.avg_days_late || 0) > 15 ? "Late Payer Risk" : "Prompt Settlement"}
                   </span>
                 </div>
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700">
-                  {brand.totalDeals} Deals Closed
-                </span>
-              </div>
 
-              {/* Metrics Grid */}
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="p-2.5 bg-[#F5F9FA] rounded-2xl border border-[#EAF2F4]">
-                  <p className="text-[9px] text-gray-400 font-medium">Earned</p>
-                  <p className="text-xs font-extrabold text-gray-900 mt-0.5">
-                    ₹{(brand.totalEarnedPaise / 100).toLocaleString("en-IN")}
-                  </p>
-                </div>
-                <div className="p-2.5 bg-[#F5F9FA] rounded-2xl border border-[#EAF2F4]">
-                  <p className="text-[9px] text-gray-400 font-medium">Promised</p>
-                  <p className="text-xs font-extrabold text-gray-900 mt-0.5">
-                    Net-{brand.avgPromisedDays}d
-                  </p>
-                </div>
-                <div
-                  className={`p-2.5 rounded-2xl border ${
-                    brand.avgDaysLate > 10
-                      ? "bg-[#F1B4B9]/20 border-[#F1B4B9]/40"
-                      : "bg-[#DAF4AA]/30 border-[#DAF4AA]/60"
-                  }`}
-                >
-                  <p
-                    className={`text-[9px] font-medium ${
-                      brand.avgDaysLate > 10 ? "text-[#702228]" : "text-[#2D4B13]"
-                    }`}
-                  >
-                    Avg Late
-                  </p>
-                  <p
-                    className={`text-xs font-extrabold mt-0.5 ${
-                      brand.avgDaysLate > 10 ? "text-[#702228]" : "text-[#2D4B13]"
-                    }`}
-                  >
-                    +{brand.avgDaysLate} Days
-                  </p>
-                </div>
-              </div>
-
-              {/* Concessions list */}
-              <div className="pt-1 text-xs">
-                <p className="font-semibold text-gray-800 mb-1.5 text-[11px]">
-                  Concessions Granted in Past Deals:
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {brand.pastConcessions.map((c, i) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-xl bg-[#F5F9FA] border border-[#EAF2F4] text-gray-600"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                      <span>{c}</span>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-3 bg-slate-50 rounded-xl">
+                    <span className="text-[10px] text-slate-400 block font-medium">
+                      Avg. Payment Speed
                     </span>
-                  ))}
+                    <span className="font-bold text-slate-900">
+                      Net-{brand.typical_payment_terms || 30} (+{brand.avg_days_late || 0}d delay)
+                    </span>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl">
+                    <span className="text-[10px] text-slate-400 block font-medium">
+                      Total Commercial Value
+                    </span>
+                    <span className="font-bold text-slate-900">
+                      ₹{((brand.total_paid_paise || 0) / 100).toLocaleString("en-IN")}
+                    </span>
+                  </div>
                 </div>
+
+                {brand.past_concessions && (
+                  <p className="text-[11px] text-slate-600 bg-amber-50/60 p-2.5 rounded-xl border border-amber-100">
+                    <strong>Past Concessions:</strong> {brand.past_concessions}
+                  </p>
+                )}
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </AppShell>
   );
