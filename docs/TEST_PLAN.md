@@ -71,3 +71,4 @@ The golden-flow test automates the complete creator journey against the real run
 - [ ] **Disclaimer Visibility**: Verify legal and tax disclaimers are present on all PDF downloads and memo portals.
 - [ ] **Data Export**: Download JSON export from `/settings` and verify schema completeness.
 - [ ] **Data Deletion**: Type `"DELETE ALL"` in settings; verify all creator rows are removed from Supabase.
+

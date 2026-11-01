@@ -101,3 +101,4 @@ Under `/settings`, creators retain absolute ownership of their data:
    - Requires explicit typed confirmation (`"DELETE ALL"`).
    - Executes cascading deletion across all user-owned rows.
    - Signs user out of Supabase Auth.
+

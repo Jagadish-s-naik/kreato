@@ -134,3 +134,4 @@ export const RADAR_CONFIG = {
 6. **Brand History Penalty**: $0 \text{ paise}$
 7. **Total ₹ at Risk**:
    $$\sum = 500,000 + 2,000,000 + 115,479 = 2,615,479 \text{ paise } (₹26,154.79)$$
+

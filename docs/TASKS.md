@@ -127,3 +127,4 @@ This checklist tracks the end-to-end development, verification, and deployment t
 - [ ] Run TypeScript strict typecheck (`pnpm typecheck`) and linter (`pnpm lint`)
 - [ ] Update `docs/DEMO_SCRIPT.md` with live generated numbers
 - [ ] Update `docs/KNOWN_LIMITS.md`
+

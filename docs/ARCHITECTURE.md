@@ -213,3 +213,4 @@ ${userMessage}
 | **Gemini Rate Limit (429)** | Exceeded quota | User-friendly message: *"AI assistant is busy. Please try again in 1 minute."* |
 | **Supabase Network Error** | Transient disconnect | Standard Supabase SSR client retry policy |
 | **Public Memo Access** | Expired token / Invalid hash | Clean 404/Expired state; rate-limit requests to 10/min per IP |
+

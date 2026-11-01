@@ -157,3 +157,4 @@ Tracks API calls for per-user rate limiting (20 requests per 10 minutes).
 | `payments` | Own UID | Own UID | Own UID | Own UID | User payments only |
 | `audit_log` | Own UID | Own UID | **DENIED** | **DENIED** | Append-only security audit trail |
 | `ai_usage` | Own UID | Own UID | **DENIED** | **DENIED** | Append-only rate tracking |
+

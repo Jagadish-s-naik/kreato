@@ -53,3 +53,4 @@ In accordance with our strict non-negotiable rules, DealShield maintains complet
 ## 6. Public Acceptance Portal Rate Limiting
 - **Status**: Unauthenticated public route protection.
 - **Details**: The route `/memo/[token]` is accessible to brand representatives without requiring an account. To mitigate denial-of-service or token enumeration attacks, the route enforces IP-level rate limiting (maximum 10 requests per minute per IP address) and validates against a SHA-256 hash with a hard 14-day expiry.
+

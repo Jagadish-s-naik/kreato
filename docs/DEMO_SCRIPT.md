@@ -78,3 +78,4 @@ This script outlines the high-impact, live demonstration of DealShield for hacka
 4. **Show**: Deal is now overdue!
 5. **Click**: **"Draft Reminder"** -> Generates escalating firm reminder citing invoice number, ₹ amount, and due date.
 6. **Click**: **"Mark as Paid"** -> Payment recorded, deal marked settled, and Brand Ledger updated.
+

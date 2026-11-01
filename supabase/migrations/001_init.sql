@@ -269,3 +269,4 @@ CREATE POLICY audit_log_insert ON audit_log FOR INSERT WITH CHECK (user_id = aut
 -- AI Usage: Own user only
 CREATE POLICY ai_usage_select ON ai_usage FOR SELECT USING (user_id = auth.uid());
 CREATE POLICY ai_usage_insert ON ai_usage FOR INSERT WITH CHECK (user_id = auth.uid());
+

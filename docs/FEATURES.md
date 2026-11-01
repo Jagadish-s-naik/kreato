@@ -238,3 +238,4 @@ This document provides exhaustive, testable functional specifications for all 11
 - **Acceptance Criteria**:
   - Automated tests verify that User A cannot read or write User B's records under any circumstance.
   - Audit log is append-only for users (no update or delete permissions granted).
+

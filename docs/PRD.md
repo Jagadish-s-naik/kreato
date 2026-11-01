@@ -58,3 +58,4 @@ The Indian creator economy is exploding, but solo creators operate with zero leg
 - **Security & Privacy**: Zero unmasked PII (phone, email, UPI, PAN) sent to the LLM during standard text flow.
 - **User Trust**: Clear labels on simulated benchmark data, transparent formulas for every rupee calculated, and full creator approval gates on all actions.
 - **Performance**: Instant (<100ms) client-side Radar recalculations on deal card adjustments.
+
