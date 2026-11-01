@@ -16,7 +16,7 @@ export const TrustAndFaqSection: React.FC = () => {
   const valueProps = [
     {
       title: "Commercial Transparency",
-      desc: "Instant visibility into true deal benchmark valuations, avoiding 40–70% below-market sponsor rates.",
+      desc: "Instant visibility into true deal benchmark valuations, avoiding 40%–70% below-market sponsor rates.",
       icon: TrendingUp,
       stat: "100%",
       statLabel: "Clear rate benchmarks",
@@ -182,4 +182,3 @@ export const TrustAndFaqSection: React.FC = () => {
     </div>
   );
 };
-

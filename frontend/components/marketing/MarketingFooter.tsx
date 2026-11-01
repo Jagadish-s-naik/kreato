@@ -159,4 +159,3 @@ export const MarketingFooter: React.FC = () => {
     </footer>
   );
 };
-
