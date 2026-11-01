@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
+import { createClient } from "@/backend/supabase/client";
 
 export const SignUpForm: React.FC = () => {
   const router = useRouter();
@@ -13,14 +14,41 @@ export const SignUpForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const supabase = createClient();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Smooth transition to dashboard
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 700);
+    setErrorMessage("");
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password,
+        options: {
+          data: {
+            full_name: fullName.trim(),
+            handle: handle.startsWith("@") ? handle.trim() : `@${handle.trim()}`,
+          },
+        },
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data.session || data.user) {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to create account.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -49,6 +77,13 @@ export const SignUpForm: React.FC = () => {
             <p className="text-sm sm:text-base text-slate-600 mb-8">
               Start managing your brand deals, auditing contracts, and protecting your income with confidence.
             </p>
+
+            {errorMessage && (
+              <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -225,4 +260,3 @@ export const SignUpForm: React.FC = () => {
     </div>
   );
 };
-

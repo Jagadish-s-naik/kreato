@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Sparkles, AlertCircle } from "lucide-react";
+import { createClient } from "@/backend/supabase/client";
 
 export const SignInForm: React.FC = () => {
   const router = useRouter();
@@ -11,18 +12,41 @@ export const SignInForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const supabase = createClient();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 600);
+    setErrorMessage("");
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password,
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data.session) {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to sign in.");
+      setLoading(false);
+    }
   };
 
   const handleDemoFill = () => {
     setEmail("aanya@creator.in");
     setPassword("kreato2026demo");
+    setErrorMessage("");
   };
 
   return (
@@ -52,6 +76,13 @@ export const SignInForm: React.FC = () => {
 
         {/* Login Card */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-lg">
+          {errorMessage && (
+            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -135,7 +166,7 @@ export const SignInForm: React.FC = () => {
 
         {/* Footer Redirect */}
         <p className="mt-6 text-center text-sm text-slate-600">
-          Don't have a Kreato account yet?{" "}
+          Don&apos;t have a Kreato account yet?{" "}
           <Link
             href="/signup"
             className="font-bold text-[#3C55F5] hover:underline"
@@ -147,4 +178,3 @@ export const SignInForm: React.FC = () => {
     </div>
   );
 };
-
