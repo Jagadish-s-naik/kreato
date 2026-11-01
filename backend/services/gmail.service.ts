@@ -113,11 +113,20 @@ export async function exchangeCodeForTokens(code: string, codeVerifier: string) 
 }
 
 /**
- * Refreshes an expired access token using the encrypted refresh token.
+ * Refreshes an expired access token using either a raw or encrypted refresh token.
  */
-export async function refreshAccessToken(encryptedRefreshToken: string) {
+export async function refreshAccessToken(tokenInput: string) {
   const { clientId, clientSecret } = getGoogleOAuthConfig();
-  const refreshToken = decryptToken(encryptedRefreshToken);
+  let refreshToken = tokenInput;
+
+  // If token is encrypted in "iv:tag:ciphertext" format, decrypt it
+  if (tokenInput.includes(":") && tokenInput.split(":").length === 3) {
+    try {
+      refreshToken = decryptToken(tokenInput);
+    } catch {
+      refreshToken = tokenInput;
+    }
+  }
 
   const body = new URLSearchParams({
     client_id: clientId,
