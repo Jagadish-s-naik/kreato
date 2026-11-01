@@ -42,6 +42,9 @@ function DealInboxContent() {
     if (tabParam === "gmail") {
       setActiveTab("gmail");
     }
+    if (searchParams.get("status") === "connected") {
+      checkGmail();
+    }
   }, [searchParams]);
 
   const loadSampleDeal = () => {
@@ -50,16 +53,17 @@ function DealInboxContent() {
     );
   };
 
+  async function checkGmail() {
+    try {
+      const res = await fetch("/api/gmail/status");
+      if (res.ok) {
+        const json = await res.json();
+        setGmailStatus(json.data);
+      }
+    } catch (err) {}
+  }
+
   useEffect(() => {
-    async function checkGmail() {
-      try {
-        const res = await fetch("/api/gmail/status");
-        if (res.ok) {
-          const json = await res.json();
-          setGmailStatus(json.data);
-        }
-      } catch (err) {}
-    }
     checkGmail();
   }, []);
 
@@ -324,6 +328,29 @@ function DealInboxContent() {
             <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 font-medium">
               Paste or screenshot works without connecting Gmail. Test users only.
             </div>
+
+            {searchParams.get("error") && (
+              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>
+                  {searchParams.get("error") === "db_error"
+                    ? "Connection timed out while saving Google authorization. Please click 'Connect Gmail' below to complete linking."
+                    : `Google Auth Error: ${searchParams.get("error")}`}
+                </span>
+              </div>
+            )}
+
+            {gmailStatus?.connected && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-900 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Connected to <strong>{gmailStatus.email}</strong></span>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-2.5 py-0.5 rounded-full">
+                  Live Inbox Active
+                </span>
+              </div>
+            )}
 
             {gmailStatus?.connected ? (
               <div className="space-y-4">

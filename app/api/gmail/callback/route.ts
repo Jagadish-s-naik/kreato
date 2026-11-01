@@ -74,23 +74,35 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const { error: upsertError } = await (serviceClient as any).from("gmail_connections").upsert(
-      {
-        user_id: user.id,
-        google_email: tokenData.emailAddress,
-        encrypted_refresh_token: cipherText,
-        iv,
-        auth_tag: authTag,
-        scope: "https://www.googleapis.com/auth/gmail.readonly",
-        status: "active",
-        connected_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" }
-    );
+    let upsertError: any = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const res = await (serviceClient as any).from("gmail_connections").upsert(
+          {
+            user_id: user.id,
+            google_email: tokenData.emailAddress,
+            encrypted_refresh_token: cipherText,
+            iv,
+            auth_tag: authTag,
+            scope: "https://www.googleapis.com/auth/gmail.readonly",
+            status: "active",
+            connected_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+        upsertError = res.error;
+        if (!upsertError) break;
+      } catch (e: any) {
+        upsertError = e;
+      }
+      if (attempt < 3) {
+        await new Promise((r) => setTimeout(r, 600 * attempt));
+      }
+    }
 
     if (upsertError) {
-      console.error("Gmail connection upsert error:", upsertError);
+      console.error("Gmail connection upsert error after 3 attempts:", upsertError);
       return NextResponse.redirect(`${baseUrl}/inbox?tab=gmail&error=db_error`);
     }
 

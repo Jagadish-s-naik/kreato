@@ -48,7 +48,7 @@ export default function DealDetailPage({ params }: { params: { id: string } }) {
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data) {
-            setDeal(json.data);
+            setDeal(json.data.deal || json.data);
           }
         }
       } catch (err) {
@@ -132,7 +132,7 @@ export default function DealDetailPage({ params }: { params: { id: string } }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          deal_id: deal.id,
+          deal_id: deal?.id || id,
           tier: activeTier,
           language: language,
         }),
@@ -157,7 +157,7 @@ export default function DealDetailPage({ params }: { params: { id: string } }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          deal_id: deal.id,
+          deal_id: deal?.id || id,
           expires_in_days: 7,
         }),
       });
@@ -180,7 +180,7 @@ export default function DealDetailPage({ params }: { params: { id: string } }) {
       const res = await fetch("/api/invoices", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deal_id: deal.id }),
+        body: JSON.stringify({ deal_id: deal?.id || id }),
       });
       const json = await res.json();
       if (res.ok && json.success) {
@@ -515,8 +515,32 @@ export default function DealDetailPage({ params }: { params: { id: string } }) {
               Generate a brand-facing link for authorized sign-off. &ldquo;Summary of terms agreed in chat. Not a legal contract.&rdquo;
             </p>
             {memoUrl ? (
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs font-mono break-all text-indigo-600">
-                {memoUrl}
+              <div className="space-y-2">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs font-mono break-all text-indigo-600">
+                  {memoUrl}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(memoUrl);
+                      alert("Memo link copied to clipboard!");
+                    }}
+                    className="px-3.5 py-1.5 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center gap-1.5"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy Link</span>
+                  </button>
+                  <a
+                    href={memoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3.5 py-1.5 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-800 font-bold text-xs flex items-center gap-1.5"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Open Sign-Off Page</span>
+                  </a>
+                </div>
               </div>
             ) : (
               <button
@@ -539,8 +563,18 @@ export default function DealDetailPage({ params }: { params: { id: string } }) {
               Auto-generate SAC 998365 sequential tax invoice with UPI QR collection.
             </p>
             {invoiceCreated ? (
-              <div className="text-xs text-emerald-700 font-bold">
-                Invoice #{invoiceCreated.invoice_number} created! View in Invoices.
+              <div className="space-y-2">
+                <div className="text-xs text-emerald-700 font-bold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Invoice #{invoiceCreated.invoice_number} created successfully!</span>
+                </div>
+                <Link
+                  href="/invoices"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#3C55F5] text-white font-bold text-xs shadow-xs"
+                >
+                  <span>View in Invoices & Collect UPI</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             ) : (
               <button
