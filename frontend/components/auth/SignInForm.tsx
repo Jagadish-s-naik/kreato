@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, ArrowRight, Sparkles, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { createClient } from "@/backend/supabase/client";
 
 export const SignInForm: React.FC = () => {
@@ -42,137 +42,145 @@ export const SignInForm: React.FC = () => {
     }
   };
 
-  const handleDemoFill = () => {
-    setEmail("aanya@creator.in");
-    setPassword("kreato2026demo");
-    setErrorMessage("");
+  const handleOAuth = async (provider: "google") => {
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+    } catch (err: any) {
+      setErrorMessage(err.message || "OAuth sign-in failed.");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFC] flex flex-col justify-center items-center px-4 sm:px-6 py-12">
-      <div className="w-full max-w-md">
-        {/* Brand Header */}
+    <div className="min-h-screen bg-white flex flex-col justify-center items-center px-4 py-12 selection:bg-indigo-100">
+      <div className="w-full max-w-[400px] flex flex-col items-center">
+        {/* Centered Brand Logo */}
+        <Link href="/" className="mb-6 flex flex-col items-center group">
+          <div className="w-12 h-12 rounded-2xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105">
+            <img
+              src="/kreato-logo.png"
+              alt="Kreato logo"
+              className="w-12 h-12 object-contain"
+            />
+          </div>
+          <span className="font-extrabold text-2xl text-slate-900 tracking-tight mt-2">
+            Kreato
+          </span>
+        </Link>
+
+        {/* Heading & Subtitle */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 group mb-6">
-            <div className="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105">
-              <img
-                src="/kreato-logo.png"
-                alt="Kreato logo"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-            <span className="font-extrabold text-2xl text-slate-900 tracking-tight">
-              Kreato
-            </span>
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
-            Welcome back
+          <h1 className="text-3xl font-extrabold text-slate-950 tracking-tight">
+            Welcome back!
           </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Sign in to access your creator business workspace.
+          <p className="mt-2 text-sm text-slate-500 font-medium">
+            New to Kreato?{" "}
+            <Link
+              href="/signup"
+              className="text-slate-900 font-semibold underline underline-offset-4 hover:text-indigo-600 transition-colors"
+            >
+              Sign up.
+            </Link>
           </p>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-lg">
-          {errorMessage && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-              <span>{errorMessage}</span>
-            </div>
-          )}
+        {/* Error Alert */}
+        {errorMessage && (
+          <div className="w-full mb-5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Email Address
-              </label>
+        {/* Minimal Form */}
+        <form onSubmit={handleSubmit} className="w-full space-y-4">
+          <div>
+            <label className="sr-only">Email address</label>
+            <input
+              type="email"
+              required
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full h-12 px-4 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 font-medium text-sm focus:outline-none focus:border-slate-950 focus:ring-1 focus:ring-slate-950 transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="sr-only">Password</label>
+            <div className="relative">
               <input
-                type="email"
+                type={showPassword ? "text" : "password"}
                 required
-                placeholder="aanya@creator.in"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#3C55F5] focus:border-transparent text-sm text-slate-900 transition-all placeholder:text-slate-400"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full h-12 px-4 pr-11 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 font-medium text-sm focus:outline-none focus:border-slate-950 focus:ring-1 focus:ring-slate-950 transition-all"
               />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Password
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs font-semibold text-[#3C55F5] hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-11 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#3C55F5] focus:border-transparent text-sm text-slate-900 transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="pt-2">
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3.5 px-6 rounded-xl bg-[#3C55F5] hover:bg-[#2D44E0] active:scale-[0.99] text-white font-bold text-sm shadow-md hover:shadow-indigo-500/25 flex items-center justify-center gap-2 transition-all disabled:opacity-70"
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
               >
-                {loading ? (
-                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
                 ) : (
-                  <>
-                    <span>Sign In to Kreato</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
+                  <Eye className="w-4 h-4" />
                 )}
               </button>
             </div>
-          </form>
-
-          {/* Quick Demo Fill Button */}
-          <div className="mt-5 pt-5 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={handleDemoFill}
-              className="w-full py-2.5 px-4 rounded-xl border border-dashed border-indigo-200 bg-indigo-50/50 hover:bg-indigo-50 text-indigo-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#3C55F5]" />
-              <span>Fill Demo Creator Account (Aanya Sharma)</span>
-            </button>
           </div>
+
+          {/* Dark Sign-In Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-12 rounded-xl bg-slate-950 hover:bg-slate-900 active:scale-[0.99] text-white font-bold text-sm transition-all flex items-center justify-center disabled:opacity-70 mt-2"
+          >
+            {loading ? (
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              "Sign in"
+            )}
+          </button>
+        </form>
+
+        {/* Forgot Password Link */}
+        <div className="mt-4 text-center">
+          <Link
+            href="/forgot-password"
+            className="text-xs font-semibold text-slate-600 hover:text-slate-950 transition-colors"
+          >
+            Forgot password or email?
+          </Link>
         </div>
 
-        {/* Footer Redirect */}
-        <p className="mt-6 text-center text-sm text-slate-600">
-          Don&apos;t have a Kreato account yet?{" "}
-          <Link
-            href="/signup"
-            className="font-bold text-[#3C55F5] hover:underline"
+        {/* Divider */}
+        <div className="w-full flex items-center gap-3 my-6">
+          <div className="flex-1 h-px bg-slate-200" />
+          <span className="text-xs text-slate-400 font-medium lowercase">or</span>
+          <div className="flex-1 h-px bg-slate-200" />
+        </div>
+
+        {/* Social Authentication */}
+        <div className="w-full space-y-2.5">
+          <button
+            type="button"
+            onClick={() => handleOAuth("google")}
+            className="w-full h-12 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 active:scale-[0.99] text-slate-800 font-bold text-sm transition-all flex items-center justify-center gap-3"
           >
-            Start for free
-          </Link>
-        </p>
+            <img
+              src="/marketing/google_logo.png"
+              alt="Google"
+              className="w-4 h-4 object-contain"
+            />
+            <span>Sign in with Google</span>
+          </button>
+        </div>
       </div>
     </div>
   );
