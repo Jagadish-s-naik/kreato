@@ -61,8 +61,7 @@ export const SignUpForm: React.FC = () => {
       }
 
       if (session) {
-        router.push("/dashboard");
-        router.refresh();
+        window.location.href = "/dashboard";
       }
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to create account.");

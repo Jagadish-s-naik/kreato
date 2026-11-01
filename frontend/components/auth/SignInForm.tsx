@@ -2,12 +2,10 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowRight, Sparkles, AlertCircle } from "lucide-react";
 import { createClient } from "@/backend/supabase/client";
 
 export const SignInForm: React.FC = () => {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,8 +32,9 @@ export const SignInForm: React.FC = () => {
       }
 
       if (data.session) {
-        router.push("/dashboard");
-        router.refresh();
+        window.location.href = "/dashboard";
+      } else {
+        setLoading(false);
       }
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to sign in.");

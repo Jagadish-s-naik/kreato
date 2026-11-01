@@ -24,6 +24,10 @@ export async function GET(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      const acceptsHtml = req.headers.get("accept")?.includes("text/html");
+      if (acceptsHtml) {
+        return NextResponse.redirect(new URL("/login?redirect=/settings", req.url));
+      }
       return NextResponse.json(
         { success: false, error: { code: "UNAUTHORIZED", message: "Authentication required." } },
         { status: 401 }
@@ -49,7 +53,7 @@ export async function GET(req: NextRequest) {
       httpOnly: true,
       secure: isProd,
       sameSite: "lax",
-      maxAge: 600,
+      maxAge: 600, // 10 minutes
       path: "/",
     });
 
@@ -58,14 +62,13 @@ export async function GET(req: NextRequest) {
     if (err instanceof GmailServiceError) {
       return NextResponse.json(
         { success: false, error: { code: err.code, message: err.message } },
-        { status: 503 }
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: err.message || "Failed to initiate Gmail connection." } },
+      { success: false, error: { code: "INTERNAL_ERROR", message: "Failed to initiate Gmail connect flow." } },
       { status: 500 }
     );
   }
 }
-
