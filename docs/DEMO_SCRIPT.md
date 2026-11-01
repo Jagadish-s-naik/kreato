@@ -1,6 +1,6 @@
-# 90-Second Demo Script — DealShield
+# 90-Second Demo Script — Kreato
 
-This script outlines the high-impact, live demonstration of DealShield for hackathon presentations and creator onboarding.
+This script outlines the high-impact, live demonstration of Kreato for hackathon presentations and creator onboarding.
 
 ---
 
@@ -78,4 +78,26 @@ This script outlines the high-impact, live demonstration of DealShield for hacka
 4. **Show**: Deal is now overdue!
 5. **Click**: **"Draft Reminder"** -> Generates escalating firm reminder citing invoice number, ₹ amount, and due date.
 6. **Click**: **"Mark as Paid"** -> Payment recorded, deal marked settled, and Brand Ledger updated.
+
+---
+
+### 1:30 – 1:45: Calendar Export (Feature 12 — Zero Setup, No OAuth)
+1. **Action**: On the deal page (`/deals/[id]`), scroll to the **Calendar Export** widget.
+2. **Click**: **"Download .ics"** -> Instantly downloads `deal-glowskin-deliv.ics` containing delivery deadline, exclusivity window, and payment due date with RFC 5545 compliance and alarm reminders.
+3. **Click**: **"Add to Google Calendar"** -> Directly opens a pre-populated Google Calendar event creation tab in the browser (zero consent screens or OAuth tokens required).
+
+---
+
+### 1:45 – 2:00: Optional Enhancements (YouTube Stats & Gmail Import Beta)
+1. **YouTube Channel Verification (Feature 13 — Public API Key Only)**:
+   - Creator opens `/settings`.
+   - Pastes their public handle `@simranlifestyle` (or channel URL).
+   - Kreato queries YouTube Data API v3 and displays public subscriber count, view counts, and auto-suggests the verified follower band (e.g. *Mid-tier (50k–200k)*).
+   - Creator confirms or retains their manually chosen benchmark band.
+2. **Gmail Import Beta (Feature 14 — Test Users Only)**:
+   - Creator visits `/inbox` and switches to the **"Connect Gmail (beta)"** tab.
+   - Banner clearly states: *"Test users only. Paste and screenshot work without connecting Gmail."*
+   - Searches for `from:glowskin`.
+   - Kreato scans subject lines, flags relevant sponsorship threads, sanitizes HTML, and extracts the deal using Gemini Copilot without ever storing raw emails.
+
 

@@ -1,5 +1,5 @@
 {
-  "name": "dealshield",
+  "name": "kreato",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,8 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "check:docs": "node --experimental-strip-types scripts/check-docs.ts",
+    "test": "vitest run tests/unit",
+    "test:watch": "vitest tests/unit",
+    "test:live": "vitest run tests/integration",
     "test:e2e": "playwright test"
   },
   "dependencies": {

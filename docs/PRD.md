@@ -1,9 +1,9 @@
-# Product Requirements Document (PRD) — DealShield
+# Product Requirements Document (PRD) — Kreato
 
 ## 1. Executive Summary & One-Line Pitch
 > **One-line pitch**: We protect Indian creators' income before they say yes to a deal, then automate the follow-through until they are paid.
 
-DealShield is a specialized income defense and deal follow-through automation platform built exclusively for Indian content creators (10k to 500k followers). It intercepts brand offers received via WhatsApp, Instagram DMs, and emails, evaluates financial terms against deterministic benchmark and risk formulas, equips creators with non-negotiable walk-away ladders and AI-assisted counter-offers, and seals agreed terms with tamper-evident Deal Memos and GST/UPI invoices.
+Kreato is a specialized income defense and deal follow-through automation platform built exclusively for Indian content creators (10k to 500k followers). It intercepts brand offers received via WhatsApp, Instagram DMs, and emails, evaluates financial terms against deterministic benchmark and risk formulas, equips creators with non-negotiable walk-away ladders and AI-assisted counter-offers, and seals agreed terms with tamper-evident Deal Memos and GST/UPI invoices.
 
 ---
 

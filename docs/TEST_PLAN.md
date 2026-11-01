@@ -1,6 +1,6 @@
-# Test Plan & Verification Strategy — DealShield
+# Test Plan & Verification Strategy — Kreato
 
-This document defines the unit tests, end-to-end golden flow, and manual QA checklist for DealShield.
+This document defines the unit tests, end-to-end golden flow, and manual QA checklist for Kreato.
 
 ---
 
@@ -20,7 +20,10 @@ All tests are located in `tests/unit/` and execute in under 5 seconds with zero 
 | **Brand Ledger** | `tests/unit/ledger.test.ts` | Brand key normalization, avg days late calculation, past concessions aggregation. |
 | **Clock Simulator** | `tests/unit/clock.test.ts` | `sim_days_offset` arithmetic, effective date computation, overdue threshold flags. |
 | **Currency & Numbers** | `tests/unit/currency.test.ts` | en-IN locale formatting (`₹1,23,456`), parsing Indian number notations ("30k", "30,000", "₹30000/-", "teen hazaar"). |
-| **RLS Isolation** | `tests/unit/rls.test.ts` | Two-user isolation verification (User A cannot read/mutate User B's rows). |
+| **RLS Isolation** | `tests/unit/rls.test.ts` | Two-user isolation verification (User A cannot read/mutate User B's rows, zero-client policy on gmail_connections). |
+| **Calendar Engine** | `tests/unit/calendar.test.ts` | RFC 5545 compliant `.ics` generation, UTF-8 octet-safe 75-char folding, CRLF endings, exclusive all-day `DTEND`, Hindi & ₹ character escaping, stable UIDs, Google Calendar URL encoding. |
+| **YouTube Verification** | `tests/unit/youtube.test.ts` | Channel input parsing (@handle, full URLs, IDs), strict hostname allowlist, subscriber-to-band mapping thresholds, error handling (quota, private sub counts). |
+| **Gmail Import Engine** | `tests/unit/gmail.test.ts` | AES-256-GCM token encryption roundtrip, tamper auth tag check, HTML sanitization, sponsorship relevance scoring, deduplication via `deals.source_ref`. |
 
 ---
 

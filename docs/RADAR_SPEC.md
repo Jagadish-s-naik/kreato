@@ -1,4 +1,4 @@
-# Money Leak Radar Specification — DealShield
+# Money Leak Radar Specification — Kreato
 
 This document specifies the exact mathematical formulas, default constants, and worked golden test calculations for the Money Leak Radar (`/lib/radar.ts`).
 All monetary computations are executed in **integer paise** (1 INR = 100 paise).

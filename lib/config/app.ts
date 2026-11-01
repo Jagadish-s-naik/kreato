@@ -2,7 +2,7 @@
  * Central application branding and configuration.
  * Change APP_NAME here to rebrand the entire application.
  */
-export const APP_NAME = "DealShield";
+export const APP_NAME = "Kreato";
 export const APP_TAGLINE = "Income protection and payment automation for Indian creators";
 
 export const APP_CONFIG = {
