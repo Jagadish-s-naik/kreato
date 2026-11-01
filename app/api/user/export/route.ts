@@ -3,6 +3,8 @@ import { createClient } from "@/backend/supabase/server";
 import { createServiceClient } from "@/backend/supabase/service";
 import { logAuditEvent } from "@/backend/services/audit.service";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const supabase = createClient();

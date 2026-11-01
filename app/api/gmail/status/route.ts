@@ -3,6 +3,8 @@ import { createClient } from "@/backend/supabase/server";
 import { createServiceClient } from "@/backend/supabase/service";
 import { isGmailEnabled } from "@/backend/services/gmail.service";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   if (!isGmailEnabled()) {
     return NextResponse.json(
@@ -25,15 +27,21 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Query gmail_connections with service client (zero client RLS policy)
+    // Query gmail_connections with service client
     const serviceClient = createServiceClient();
-    const { data: connection } = await (serviceClient as any)
+    const { data: connection, error: queryErr } = await (serviceClient as any)
       .from("gmail_connections")
-      .select("email, scopes, created_at, updated_at")
+      .select("google_email, scope, status, connected_at")
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (!connection) {
+    if (queryErr) {
+      console.error("Gmail status query error:", queryErr);
+    }
+
+    const isConnected = Boolean(connection && connection.status === "active" && connection.google_email);
+
+    if (!isConnected) {
       return NextResponse.json({
         success: true,
         data: {
@@ -48,16 +56,16 @@ export async function GET(req: NextRequest) {
       data: {
         enabled: true,
         connected: true,
-        email: connection.email,
-        scopes: connection.scopes,
-        connectedAt: connection.created_at,
+        email: connection.google_email,
+        scopes: connection.scope ? [connection.scope] : ["https://www.googleapis.com/auth/gmail.readonly"],
+        connectedAt: connection.connected_at,
       },
     });
   } catch (err: any) {
+    console.error("Gmail status error:", err);
     return NextResponse.json(
       { success: false, error: { code: "INTERNAL_ERROR", message: err.message || "Failed to check Gmail status." } },
       { status: 500 }
     );
   }
 }
-

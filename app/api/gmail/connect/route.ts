@@ -24,8 +24,9 @@ export async function GET(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      const acceptsHtml = req.headers.get("accept")?.includes("text/html");
-      if (acceptsHtml) {
+      // If browser navigation or user clicked "Connect Gmail", always redirect to login
+      const isApiFetch = req.headers.get("content-type") === "application/json" && !req.headers.get("accept")?.includes("text/html");
+      if (!isApiFetch) {
         return NextResponse.redirect(new URL("/login?redirect=/settings", req.url));
       }
       return NextResponse.json(

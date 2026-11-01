@@ -7,7 +7,7 @@ import {
   refreshAccessToken,
   GmailServiceError,
 } from "@/backend/services/gmail.service";
-import { decryptToken, encryptToken } from "@/lib/gmail/crypto";
+import { decryptToken, decryptFromDb } from "@/lib/gmail/crypto";
 import { GmailSearchQuerySchema } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (!connection) {
+    if (!connection || !connection.encrypted_refresh_token || connection.status !== "active") {
       return NextResponse.json(
         {
           success: false,
@@ -58,25 +58,16 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Check token expiration
-    let accessToken: string;
-    const isExpired = new Date(connection.token_expires_at).getTime() <= Date.now() + 60000;
-
-    if (isExpired && connection.encrypted_refresh_token) {
-      const refreshed = await refreshAccessToken(connection.encrypted_refresh_token);
-      accessToken = refreshed.accessToken;
-
-      await (serviceClient as any)
-        .from("gmail_connections")
-        .update({
-          encrypted_access_token: encryptToken(refreshed.accessToken),
-          token_expires_at: new Date(Date.now() + refreshed.expiresIn * 1000).toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
+    // Decrypt refresh token and obtain fresh access token
+    let rawRefreshToken: string;
+    if (connection.iv && connection.auth_tag) {
+      rawRefreshToken = decryptFromDb(connection.encrypted_refresh_token, connection.iv, connection.auth_tag);
     } else {
-      accessToken = decryptToken(connection.encrypted_access_token);
+      rawRefreshToken = decryptToken(connection.encrypted_refresh_token);
     }
+
+    const refreshed = await refreshAccessToken(rawRefreshToken);
+    const accessToken = refreshed.accessToken;
 
     const messages = await listGmailMessages(accessToken, searchQuery, maxResults);
 
@@ -112,4 +103,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import QRCode from "qrcode";
 import { AppShell } from "@/frontend/components/layout/AppShell";
 import {
   QrCode,
@@ -17,8 +18,19 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeUpiModal, setActiveUpiModal] = useState<any | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [reminderDraft, setReminderDraft] = useState<any | null>(null);
   const [draftingReminder, setDraftingReminder] = useState(false);
+
+  useEffect(() => {
+    if (activeUpiModal?.upi_link) {
+      QRCode.toDataURL(activeUpiModal.upi_link, { width: 220, margin: 1 })
+        .then(setQrDataUrl)
+        .catch(() => setQrDataUrl(null));
+    } else {
+      setQrDataUrl(null);
+    }
+  }, [activeUpiModal]);
 
   async function loadInvoices() {
     try {
@@ -206,7 +218,15 @@ export default function InvoicesPage() {
               <p className="text-xs text-slate-500">
                 Invoice {activeUpiModal.invoice_number} • ₹{((activeUpiModal.total_paise || 0) / 100).toLocaleString("en-IN")}
               </p>
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 inline-block font-mono text-[11px] text-slate-700 break-all">
+              {qrDataUrl ? (
+                <div className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                  <img src={qrDataUrl} alt="UPI Payment QR Code" className="w-48 h-48 rounded-xl shadow-xs" />
+                  <span className="text-[10px] text-slate-500 font-semibold mt-2">
+                    Scan with PhonePe, Google Pay, or Paytm
+                  </span>
+                </div>
+              ) : null}
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 inline-block font-mono text-[10px] text-slate-700 break-all w-full select-all">
                 {activeUpiModal.upi_link}
               </div>
               <div>

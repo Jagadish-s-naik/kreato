@@ -46,3 +46,33 @@ export function decryptToken(encryptedString: string, customKey?: Buffer): strin
   return decrypted.toString("utf8");
 }
 
+/**
+ * Splits AES-256-GCM components into separate fields for relational DB storage.
+ */
+export function encryptForDb(text: string): { cipherText: string; iv: string; authTag: string } {
+  const key = getEncryptionKey();
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+  const encrypted = Buffer.concat([cipher.update(text, "utf8"), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return {
+    cipherText: encrypted.toString("hex"),
+    iv: iv.toString("hex"),
+    authTag: tag.toString("hex"),
+  };
+}
+
+/**
+ * Decrypts tokens stored across separate cipher, iv, and auth_tag columns.
+ */
+export function decryptFromDb(cipherText: string, ivHex: string, authTagHex: string): string {
+  const key = getEncryptionKey();
+  const iv = Buffer.from(ivHex, "hex");
+  const tag = Buffer.from(authTagHex, "hex");
+  const ciphertext = Buffer.from(cipherText, "hex");
+
+  const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
+  decipher.setAuthTag(tag);
+  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+  return decrypted.toString("utf8");
+}

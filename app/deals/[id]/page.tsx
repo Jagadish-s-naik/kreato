@@ -84,9 +84,16 @@ export default function DealDetailPage({ params }: { params: { id: string } }) {
   // Pure Calculation Engines
   const deliverables = (deal.deliverables as any[]) || [{ format: "reel", quantity: 1 }];
   const feePaise = deal.fee_paise || 2500000;
-  const paymentDays = deal.payment_terms_days || 60;
-  const usageRightsType = deal.usage_rights || "perpetual";
-  const exclusivityDays = deal.exclusivity_days || 60;
+
+  const rawUsage = deal.usage_rights as any;
+  const usageRightsType = typeof rawUsage === "string" ? rawUsage : (rawUsage?.type || rawUsage?.rights_type || "organic");
+  const paidAdsAllowed = typeof rawUsage === "object" ? !!rawUsage?.paid_ads_allowed : false;
+
+  const rawPayment = deal.payment_terms as any;
+  const paymentDays = typeof rawPayment === "number" ? rawPayment : (rawPayment?.days ?? rawPayment?.net_days ?? (deal as any).payment_terms_days ?? 30);
+
+  const rawExclusivity = deal.exclusivity as any;
+  const exclusivityDays = typeof rawExclusivity === "number" ? rawExclusivity : (rawExclusivity?.days ?? (deal as any).exclusivity_days ?? 0);
 
   const radar = computeRadar({
     deliverables: deliverables.map((d: any) => ({
@@ -95,7 +102,7 @@ export default function DealDetailPage({ params }: { params: { id: string } }) {
     })),
     benchmarkMedians: { reel: 5000000, story: 1250000, post: 3000000, youtube_video: 8000000 },
     offeredFeePaise: feePaise,
-    usageRights: { type: usageRightsType },
+    usageRights: { type: usageRightsType, paid_ads_allowed: paidAdsAllowed },
     paymentDays: paymentDays,
     exclusivityDays: exclusivityDays,
     avgDaysLate: 38,

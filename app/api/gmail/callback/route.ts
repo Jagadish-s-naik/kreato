@@ -7,7 +7,7 @@ import {
   exchangeCodeForTokens,
   GmailServiceError,
 } from "@/backend/services/gmail.service";
-import { encryptToken } from "@/lib/gmail/crypto";
+import { encryptForDb } from "@/lib/gmail/crypto";
 
 export async function GET(req: NextRequest) {
   if (!isGmailEnabled()) {
@@ -47,42 +47,50 @@ export async function GET(req: NextRequest) {
     }
 
     const tokenData = await exchangeCodeForTokens(code, verifierCookie);
-
-    const encryptedAccessToken = encryptToken(tokenData.accessToken);
-    const encryptedRefreshToken = tokenData.refreshToken ? encryptToken(tokenData.refreshToken) : null;
-
-    const expiresAt = new Date(Date.now() + tokenData.expiresIn * 1000).toISOString();
-
     const serviceClient = createServiceClient();
 
-    // Check if user already had a refresh token, preserve if new one wasn't returned
-    let finalRefreshToken = encryptedRefreshToken;
-    if (!finalRefreshToken) {
+    // Encrypt refresh token if present
+    let cipherText = "";
+    let iv = "";
+    let authTag = "";
+
+    if (tokenData.refreshToken) {
+      const storage = encryptForDb(tokenData.refreshToken);
+      cipherText = storage.cipherText;
+      iv = storage.iv;
+      authTag = storage.authTag;
+    } else {
+      // Preserve existing refresh token if Google didn't re-issue
       const { data: existingConn } = await (serviceClient as any)
         .from("gmail_connections")
-        .select("encrypted_refresh_token")
+        .select("encrypted_refresh_token, iv, auth_tag")
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (existingConn?.encrypted_refresh_token) {
-        finalRefreshToken = existingConn.encrypted_refresh_token;
+        cipherText = existingConn.encrypted_refresh_token;
+        iv = existingConn.iv;
+        authTag = existingConn.auth_tag;
       }
     }
 
     const { error: upsertError } = await (serviceClient as any).from("gmail_connections").upsert(
       {
         user_id: user.id,
-        email: tokenData.emailAddress,
-        encrypted_access_token: encryptedAccessToken,
-        encrypted_refresh_token: finalRefreshToken,
-        token_expires_at: expiresAt,
-        scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+        google_email: tokenData.emailAddress,
+        encrypted_refresh_token: cipherText,
+        iv,
+        auth_tag: authTag,
+        scope: "https://www.googleapis.com/auth/gmail.readonly",
+        status: "active",
+        connected_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id" }
     );
 
     if (upsertError) {
+      console.error("Gmail connection upsert error:", upsertError);
       return NextResponse.redirect(`${baseUrl}/inbox?tab=gmail&error=db_error`);
     }
 
@@ -100,9 +108,9 @@ export async function GET(req: NextRequest) {
 
     return response;
   } catch (err: any) {
+    console.error("Gmail OAuth callback error:", err);
     return NextResponse.redirect(
       `${baseUrl}/inbox?tab=gmail&error=${encodeURIComponent(err.message || "connection_failed")}`
     );
   }
 }
-

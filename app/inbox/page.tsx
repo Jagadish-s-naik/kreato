@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { AppShell } from "@/frontend/components/layout/AppShell";
 import {
   Upload,
@@ -14,15 +14,15 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { tokenizePII } from "@/lib/mask";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function DealInboxPage() {
+function DealInboxContent() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"paste" | "screenshot" | "gmail">("paste");
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") === "gmail" ? "gmail" : "paste";
+  const [activeTab, setActiveTab] = useState<"paste" | "screenshot" | "gmail">(initialTab);
   const [channel, setChannel] = useState<"whatsapp" | "instagram" | "email" | "other">("whatsapp");
-  const [rawText, setRawText] = useState(
-    "Hi Aanya, we loved your recent reel! We want 1 Reel and 2 Stories for GlowSkin India. Our budget is ₹25,000 all inclusive of perpetual digital usage rights and 60 days category exclusivity. Payment net-60 days. WhatsApp me on 9876543210."
-  );
+  const [rawText, setRawText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [scamAlert, setScamAlert] = useState<any | null>(null);
 
@@ -36,6 +36,19 @@ export default function DealInboxPage() {
 
   // Masking preview
   const { maskedText } = tokenizePII(rawText);
+
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "gmail") {
+      setActiveTab("gmail");
+    }
+  }, [searchParams]);
+
+  const loadSampleDeal = () => {
+    setRawText(
+      "Hi, we loved your recent content! We want 1 Instagram Reel and 2 Stories for GlowSkin India. Our budget is ₹25,000 all inclusive of perpetual digital usage rights and 60 days category exclusivity. Payment net-60 days following live post verification. WhatsApp me on 9876543210."
+    );
+  };
 
   useEffect(() => {
     async function checkGmail() {
@@ -221,9 +234,20 @@ export default function DealInboxPage() {
               </div>
 
               <div className="pt-4 flex items-center justify-between">
-                <span className="text-[10px] text-gray-400 font-medium">
-                  {rawText.length} characters
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-400 font-medium">
+                    {rawText.length} characters
+                  </span>
+                  {!rawText && (
+                    <button
+                      type="button"
+                      onClick={loadSampleDeal}
+                      className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100 transition-colors"
+                    >
+                      + Load Sample Deal
+                    </button>
+                  )}
+                </div>
                 <button
                   onClick={handleIngest}
                   disabled={isProcessing || !rawText.trim()}
@@ -320,7 +344,7 @@ export default function DealInboxPage() {
                   </button>
                 </div>
 
-                {gmailMessages.length > 0 && (
+                {gmailMessages.length > 0 ? (
                   <div className="space-y-3">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
@@ -328,16 +352,17 @@ export default function DealInboxPage() {
                           <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase">
                             <th className="p-2">Select</th>
                             <th className="p-2">Sender</th>
-                            <th className="p-2">Subject</th>
-                            <th className="p-2">Relevance</th>
+                            <th className="p-2">Subject & Snippet</th>
+                            <th className="p-2">Status</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {gmailMessages.map((msg) => (
-                            <tr key={msg.id} className="hover:bg-slate-50">
-                              <td className="p-2">
+                            <tr key={msg.id} className="hover:bg-slate-50 transition-colors">
+                              <td className="p-2 align-top">
                                 <input
                                   type="checkbox"
+                                  disabled={msg.isAlreadyImported}
                                   checked={selectedMails.includes(msg.id)}
                                   onChange={(e) => {
                                     if (e.target.checked) {
@@ -346,14 +371,37 @@ export default function DealInboxPage() {
                                       setSelectedMails(selectedMails.filter((id) => id !== msg.id));
                                     }
                                   }}
+                                  className="mt-1"
                                 />
                               </td>
-                              <td className="p-2 font-bold text-slate-800">{msg.from}</td>
-                              <td className="p-2 text-slate-600">{msg.subject}</td>
-                              <td className="p-2">
-                                <span className="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">
-                                  Likely brand offer
-                                </span>
+                              <td className="p-2 align-top">
+                                <div className="font-bold text-slate-900">
+                                  {msg.senderName || msg.senderEmail || "Brand Contact"}
+                                </div>
+                                {msg.senderEmail && (
+                                  <div className="text-[10px] text-slate-400 truncate max-w-[160px]">
+                                    {msg.senderEmail}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="p-2 align-top">
+                                <div className="font-semibold text-slate-800">{msg.subject}</div>
+                                {msg.snippet && (
+                                  <div className="text-[11px] text-slate-500 line-clamp-2 mt-0.5">
+                                    {msg.snippet}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="p-2 align-top">
+                                {msg.isAlreadyImported ? (
+                                  <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold">
+                                    Already Imported
+                                  </span>
+                                ) : (
+                                  <span className="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">
+                                    Brand Offer
+                                  </span>
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -364,10 +412,18 @@ export default function DealInboxPage() {
                     <button
                       onClick={handleBatchImport}
                       disabled={importing || selectedMails.length === 0}
-                      className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs disabled:opacity-50"
+                      className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs disabled:opacity-50 transition-colors shadow-xs"
                     >
                       {importing ? "Importing..." : `Import Selected (${selectedMails.length})`}
                     </button>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl space-y-2 bg-slate-50/50">
+                    <Mail className="w-8 h-8 text-indigo-400 mx-auto" />
+                    <p className="text-xs font-bold text-slate-700">Ready to search your inbox</p>
+                    <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
+                      Click &ldquo;Search Brand Emails&rdquo; to scan for sponsorship inquiries, or refine the query above.
+                    </p>
                   </div>
                 )}
               </div>
@@ -389,5 +445,20 @@ export default function DealInboxPage() {
         )}
       </div>
     </AppShell>
+  );
+}
+
+export default function DealInboxPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-canvas flex items-center justify-center p-8 text-xs text-slate-400">
+          <RefreshCw className="w-5 h-5 animate-spin text-indigo-500 mr-2" />
+          Loading Deal Inbox...
+        </div>
+      }
+    >
+      <DealInboxContent />
+    </Suspense>
   );
 }
