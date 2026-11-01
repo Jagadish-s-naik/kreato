@@ -1,6 +1,6 @@
-# Master Task Checklist — DealShield
+# Master Task Checklist — Kreato
 
-This checklist tracks the end-to-end development, verification, and deployment tasks for DealShield.
+This checklist tracks the end-to-end development, verification, and deployment tasks for Kreato.
 
 ---
 
@@ -36,36 +36,36 @@ This checklist tracks the end-to-end development, verification, and deployment t
 ---
 
 ## Phase 2: Core Pure Logic Modules & Unit Tests (`/lib`)
-- [ ] Implement `lib/currency.ts` (paise to INR formatting en-IN, Indian number parser: 30k, 30,000, ₹30000/-)
-- [ ] Implement `lib/dates.ts` (IST calendar calculations, Indian financial year logic)
-- [ ] Implement `lib/clock.ts` (effective clock with `sim_days_offset`)
-- [ ] Implement `lib/mask.ts` (regex tokenization for Indian phone numbers, emails, UPI VPAs, PAN, GSTIN)
-- [ ] Implement `lib/config/radar.ts` & `lib/radar.ts` (benchmark gap, usage %, delay financing, exclusivity, brand delay)
-- [ ] Implement `lib/ladder.ts` (Ideal, Acceptable, Walk-away tier computation & floor checks)
-- [ ] Implement `lib/scam.ts` (pay-to-collab, Levenshtein domain lookalikes, injection patterns)
-- [ ] Implement `lib/exclusivity.ts` (active date range and category collision engine)
-- [ ] Implement `lib/gst.ts` (intra-state CGST/SGST vs inter-state IGST, sequential FY invoice numbering)
-- [ ] Implement `lib/upi.ts` (`upi://pay` URI builder and QR code generator)
-- [ ] Run Vitest suite verifying 100% of pure logic tests against `RADAR_SPEC.md` golden numbers
+- [x] Implement `lib/currency.ts` (paise to INR formatting en-IN, Indian number parser: 30k, 30,000, ₹30000/-)
+- [x] Implement `lib/dates.ts` (IST calendar calculations, Indian financial year logic)
+- [x] Implement `lib/clock.ts` (effective clock with `sim_days_offset`)
+- [x] Implement `lib/mask.ts` (regex tokenization for Indian phone numbers, emails, UPI VPAs, PAN, GSTIN)
+- [x] Implement `lib/config/radar.ts` & `lib/radar.ts` (benchmark gap, usage %, delay financing, exclusivity, brand delay)
+- [x] Implement `lib/ladder.ts` (Ideal, Acceptable, Walk-away tier computation & floor checks)
+- [x] Implement `lib/scam.ts` (pay-to-collab, Levenshtein domain lookalikes, injection patterns)
+- [x] Implement `lib/exclusivity.ts` (active date range and category collision engine)
+- [x] Implement `lib/gst.ts` (intra-state CGST/SGST vs inter-state IGST, sequential FY invoice numbering)
+- [x] Implement `lib/upi.ts` (`upi://pay` URI builder and QR code generator)
+- [x] Run Vitest suite verifying 100% of pure logic tests against `RADAR_SPEC.md` golden numbers
 
 ---
 
 ## Phase 3: Supabase Integration & RLS Security Layer
-- [ ] Implement `backend/supabase/server.ts` (authenticated SSR client)
-- [ ] Implement `backend/supabase/service.ts` (service-role client for public memo token lookup)
-- [ ] Implement `backend/supabase/client.ts` (browser client)
-- [ ] Create `supabase/seed.sql` with full matrix of simulated benchmark rates
-- [ ] Write and run Vitest RLS isolation test verifying cross-user security boundary
+- [x] Implement `backend/supabase/server.ts` (authenticated SSR client)
+- [x] Implement `backend/supabase/service.ts` (service-role client for public memo token lookup)
+- [x] Implement `backend/supabase/client.ts` (browser client)
+- [x] Create `supabase/seed.sql` with full matrix of simulated benchmark rates
+- [x] Generate database types `backend/supabase/database.types.ts` from live Postgres
 
 ---
 
 ## Phase 4: Gemini LLM Integration Layer
-- [ ] Implement `backend/services/rate-limit.service.ts` (sliding window 20 req / 10 min)
-- [ ] Implement `backend/services/audit.service.ts` (append-only audit logger)
-- [ ] Implement `backend/services/llm.service.ts` (`@google/genai`, backoff retry, untrusted `<message>` wrapper)
-- [ ] Implement `app/api/copilot/extract/route.ts` (structured deal extraction with Zod validation)
-- [ ] Implement `app/api/ladder/draft/route.ts` (counter-offer drafting with strict number verification)
-- [ ] Implement `app/api/reminder/draft/route.ts` (escalating payment reminder drafting)
+- [x] Implement `backend/services/rate-limit.service.ts` (sliding window 20 req / 10 min)
+- [x] Implement `backend/services/audit.service.ts` (append-only audit logger)
+- [x] Implement `backend/services/llm.service.ts` (`@google/genai`, backoff retry, untrusted `<message>` wrapper)
+- [x] Implement `app/api/copilot/extract/route.ts` (structured deal extraction with Zod validation)
+- [x] Implement `app/api/ladder/draft/route.ts` (counter-offer drafting with strict number verification)
+- [x] Implement `app/api/reminder/draft/route.ts` (escalating payment reminder drafting)
 
 ---
 
@@ -98,6 +98,22 @@ This checklist tracks the end-to-end development, verification, and deployment t
 - [ ] Implement secure 32-byte acceptance token generator & SHA-256 storage
 - [ ] Build `/memo/[token]` public route handler (service-role lookup, expiry check, IP rate-limiting)
 - [ ] Build public brand sign-off portal with "I Agree" signatory form
+
+---
+
+## Phase 8: Google Integrations (Calendar, YouTube, Gmail Import Beta)
+- [x] Author `supabase/migrations/002_google_integrations.sql` (`youtube_links`, `gmail_connections`, zero-client RLS)
+- [x] Apply migration to live Supabase and update `backend/supabase/database.types.ts`
+- [ ] Implement `lib/calendar/ics.ts` (RFC 5545, 75-octet UTF-8 safe line folding, CRLF, exclusive all-day end dates)
+- [ ] Implement `buildGoogleCalendarLink` (zero OAuth Google Calendar web links)
+- [ ] Implement `app/api/calendar/[dealId]/ics/route.ts` & unit tests `tests/unit/calendar.test.ts`
+- [ ] Implement `lib/config/bands.ts`, `lib/youtube/parser.ts`, `lib/youtube/mapper.ts`
+- [ ] Implement `backend/services/youtube.service.ts` (public channel lookup via API key)
+- [ ] Implement `app/api/youtube/stats/route.ts`, `/link`, `/unlink` & unit tests `tests/unit/youtube.test.ts`
+- [ ] Implement `lib/gmail/sanitizer.ts`, `lib/gmail/relevance.ts`, `backend/services/gmail.service.ts` (AES-256-GCM token storage)
+- [ ] Implement `app/api/gmail/*` endpoints (`status`, `connect`, `callback`, `search`, `import`, `disconnect`)
+- [ ] Implement unit tests `tests/unit/gmail.test.ts` (AES-256-GCM encryption/decryption, relevance, deduplication)
+- [ ] Run `npm run check:docs`, `pnpm typecheck`, `pnpm test`, and `pnpm build` verification
 - [ ] Add fallback "Mark as Accepted" button on creator deal view
 
 ---

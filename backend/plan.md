@@ -1,4 +1,4 @@
-# DealShield — Backend & Database Master Implementation Plan
+# Kreato — Backend & Database Master Implementation Plan
 
 > **Role & Boundary**: This plan governs the **Backend Services**, **API Routes**, **Database Layer (Supabase)**, and **Pure Deterministic Calculation Engines (`/lib`)**.  
 > The Frontend UI components, layouts, styling, and client-side OCR workers are being developed in parallel by the frontend collaborator. This document establishes the exact architectural contract, database schemas, API specs, and setup steps so both sides integrate seamlessly without ambiguity.
@@ -75,7 +75,7 @@ kreato/
 Follow these steps to configure your local environment and cloud services:
 
 ### Step 2.1: Supabase Setup (Database & Auth)
-1. Go to [supabase.com](https://supabase.com) and create a free project named `dealshield` (or use local Supabase CLI via `npx supabase start`).
+1. Go to [supabase.com](https://supabase.com) and create a free project named `kreato` (or use local Supabase CLI via `npx supabase start`).
 2. Open the **SQL Editor** in your Supabase Dashboard.
 3. Run `supabase/migrations/001_init.sql` to generate all tables, enums, indexes, and RLS policies.
 4. Run `supabase/seed.sql` to populate the 240 benchmark combinations and demo brand history.

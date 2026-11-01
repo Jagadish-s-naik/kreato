@@ -1,160 +1,169 @@
-# Database Architecture & Schema Specification — DealShield
+# Kreato — Complete Database Schema & RLS Matrix
 
-This document details the PostgreSQL schema, indexes, Row-Level Security (RLS) policies, and data dictionary for DealShield.
-The full runnable migration is located at [`supabase/migrations/001_init.sql`](file:///c:/xampp/htdocs/kreato/supabase/migrations/001_init.sql).
-
----
-
-## 1. Entity-Relationship Overview
-
-```
-auth.users (Supabase Auth)
-  │
-  ├── 1:1 ── profiles (creator profile, UPI VPA, sim_days_offset)
-  │
-  ├── 1:N ── deals (brand offer details, deliverables, terms)
-  │           ├── 1:N ── drafts (negotiation counters & overdue reminders)
-  │           ├── 1:1 ── memos (agreed terms snapshot & public SHA-256 accept token)
-  │           ├── 1:1 ── invoices (FY-sequential tax invoice & UPI QR payload)
-  │           └── 1:N ── payments (settled transactions & speed tracking)
-  │
-  ├── 1:N ── audit_log (append-only compliance trail, no PII)
-  └── 1:N ── ai_usage (sliding window rate limit tracking)
-
-benchmarks (Read-only catalog of simulated Indian market rates across niches, bands, formats)
-```
+Kreato is backed by PostgreSQL on Supabase. Every table enforces Row-Level Security (RLS) to ensure multi-tenant isolation. All monetary values are strictly stored as `BIGINT` integer paise (₹1 = 100 paise).
 
 ---
 
-## 2. Table Specifications & Data Dictionary
+## 📋 Tables & Schema Reference
 
-### 2.1. `profiles`
-Stores the creator's identity, default tax status, payment destination, and simulation clock.
-- `id` (UUID, PK): References `auth.users(id)` ON DELETE CASCADE.
-- `display_name` (TEXT, NOT NULL): Public creator name.
-- `niche` (creator_niche ENUM, NOT NULL): e.g. `skincare`, `tech_gadgets`, `fashion`.
-- `follower_band` (follower_band ENUM, NOT NULL): `nano_10k_50k`, `micro_50k_100k`, `mid_100k_250k`, `macro_250k_500k`.
-- `state` (TEXT, NOT NULL): Indian state (used for GST intra vs inter-state tax logic).
-- `gstin` (TEXT, NULLABLE): Optional 15-character GSTIN.
-- `pan_name` (TEXT, NULLABLE): Name as registered on PAN.
-- `upi_vpa` (TEXT, NOT NULL): UPI Virtual Payment Address (e.g., `creator@oksbi`).
-- `min_fee_paise` (BIGINT, NULLABLE): Creator's absolute floor fee per deal.
-- `sim_days_offset` (INT, NOT NULL, DEFAULT 0): Virtual days offset for testing overdue workflows.
-- `created_at` (TIMESTAMPTZ, DEFAULT NOW()).
+### 1. `profiles`
+Stores creator profile settings, state of business, tax credentials, and default commercial rates.
+- `id` (UUID, PK, references `auth.users(id) ON DELETE CASCADE`)
+- `display_name` (TEXT, NOT NULL)
+- `niche` (ENUM `creator_niche`, NOT NULL DEFAULT `'other'`)
+- `follower_band` (ENUM `follower_band`, NOT NULL DEFAULT `'nano_10k_50k'`)
+- `state` (TEXT, NOT NULL DEFAULT `'Maharashtra'`)
+- `gstin` (TEXT, NULLABLE)
+- `pan_name` (TEXT, NULLABLE)
+- `upi_vpa` (TEXT, NOT NULL)
+- `min_fee_paise` (BIGINT, NULLABLE)
+- `sim_days_offset` (INT, NOT NULL DEFAULT 0)
+- `youtube_verified_band` (ENUM `follower_band`, NULLABLE)
+- `created_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- **RLS Policy**: `auth.uid() = id` (SELECT, INSERT, UPDATE, DELETE).
 
-### 2.2. `benchmarks`
-Static simulated reference rates for fair market rate calculations.
-- `id` (UUID, PK).
-- `niche` (creator_niche ENUM).
-- `follower_band` (follower_band ENUM).
-- `format` (deliverable_format ENUM): `reel`, `story`, `post`, `youtube_video`, `short`.
-- `median_paise` (BIGINT): Fair market median.
-- `min_paise` (BIGINT): Bottom quartile rate.
-- `max_paise` (BIGINT): Top quartile rate.
-- `is_simulated` (BOOLEAN, DEFAULT TRUE): Flagged to ensure UI renders "Simulated benchmark data".
+### 2. `benchmarks`
+Read-only simulated benchmark rates for deliverable formats across niches and follower tiers.
+- `id` (UUID, PK)
+- `niche` (ENUM `creator_niche`, NOT NULL)
+- `follower_band` (ENUM `follower_band`, NOT NULL)
+- `format` (ENUM `deliverable_format`, NOT NULL)
+- `median_paise` (BIGINT, NOT NULL)
+- `min_paise` (BIGINT, NOT NULL)
+- `max_paise` (BIGINT, NOT NULL)
+- `is_simulated` (BOOLEAN, NOT NULL DEFAULT TRUE)
+- `created_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- **RLS Policy**: Public / Authenticated read-only (`auth.role() = 'authenticated'`).
 
-### 2.3. `deals`
-Represents an ingested brand deal and its negotiated state.
-- `id` (UUID, PK).
-- `user_id` (UUID, FK -> auth.users).
-- `brand_name` (TEXT): Display name of brand.
-- `brand_key` (TEXT): Normalized lowercase alphanumeric string (e.g., `glowskin`).
-- `brand_domain` (TEXT, NULLABLE): e.g., `glowskin.in`.
-- `category` (creator_niche ENUM).
-- `channel` (deal_channel ENUM): `whatsapp`, `instagram_dm`, `email`, `other`.
-- `deliverables` (JSONB): Array of `{ format: string, quantity: number }`.
-- `deadline` (DATE, NULLABLE).
-- `fee_paise` (BIGINT, NULLABLE): Offered fee in integer paise.
-- `usage_rights` (JSONB): `{ type: 'none'|'organic'|'paid_ads'|'perpetual'|'unspecified', months: number|null, paid_ads_allowed: boolean }`.
-- `exclusivity` (JSONB): `{ category: string|null, days: number|null, start_date: string|null, end_date: string|null }`.
-- `payment_terms` (JSONB): `{ days: number|null, advance_percent: number|null }`.
-- `risky_quotes` (JSONB): Array of short verbatim strings (max 120 chars) extracted from message.
-- `scam_result` (JSONB): `{ score: number, level: 'safe'|'suspicious'|'danger', reasons: string[] }`.
-- `status` (deal_status ENUM): `new`, `countered`, `agreed`, `invoiced`, `paid`.
-- `agreed_terms` (JSONB, NULLABLE): Snapshot of terms locked upon agreement.
-- `created_at`, `updated_at` (TIMESTAMPTZ).
+### 3. `deals`
+Sponsorship collaboration opportunities captured via text paste, screenshot OCR, or Gmail import.
+- `id` (UUID, PK)
+- `user_id` (UUID, NOT NULL, references `auth.users(id) ON DELETE CASCADE`)
+- `brand_name` (TEXT, NOT NULL)
+- `brand_key` (TEXT, NOT NULL)
+- `brand_domain` (TEXT, NULLABLE)
+- `category` (ENUM `creator_niche`, NOT NULL DEFAULT `'other'`)
+- `channel` (ENUM `deal_channel`, NOT NULL DEFAULT `'whatsapp'`)
+- `deliverables` (JSONB, NOT NULL DEFAULT `'[]'`)
+- `deadline` (DATE, NULLABLE)
+- `fee_paise` (BIGINT, NULLABLE)
+- `usage_rights` (JSONB, NOT NULL)
+- `exclusivity` (JSONB, NOT NULL)
+- `payment_terms` (JSONB, NOT NULL)
+- `risky_quotes` (JSONB, NOT NULL DEFAULT `'[]'`)
+- `scam_result` (JSONB, NOT NULL)
+- `status` (ENUM `deal_status`, NOT NULL DEFAULT `'new'`)
+- `source_ref` (TEXT, NULLABLE — SHA-256 of Gmail message ID for deduplication)
+- `agreed_terms` (JSONB, NULLABLE)
+- `created_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- `updated_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- **RLS Policy**: `auth.uid() = user_id` (ALL operations).
 
-### 2.4. `drafts`
-Counter-offers and payment follow-ups drafted by Gemini around deterministic numbers.
-- `id` (UUID, PK).
-- `user_id` (UUID, FK -> auth.users).
-- `deal_id` (UUID, FK -> deals).
-- `kind` (draft_kind ENUM): `counter_offer` or `reminder`.
-- `tier` (draft_tier ENUM, NULLABLE): `ideal`, `acceptable`, `walkaway`.
-- `language` (TEXT): `en` or `hinglish`.
-- `body` (TEXT): Draft text with prefilled figures.
-- `numbers` (JSONB): Target numbers enforced during validation.
-- `status` (draft_status ENUM): `draft`, `approved`, `discarded`.
-- `created_at`, `approved_at` (TIMESTAMPTZ).
+### 4. `drafts`
+Counter-offer and payment reminder AI message drafts.
+- `id` (UUID, PK)
+- `user_id` (UUID, NOT NULL, references `auth.users(id) ON DELETE CASCADE`)
+- `deal_id` (UUID, NOT NULL, references `deals(id) ON DELETE CASCADE`)
+- `kind` (ENUM `draft_kind`: `'counter_offer'` | `'reminder'`)
+- `tier` (ENUM `draft_tier`: `'ideal'` | `'acceptable'` | `'walkaway'`)
+- `language` (TEXT, NOT NULL DEFAULT `'en'`)
+- `body` (TEXT, NOT NULL)
+- `numbers` (JSONB, NOT NULL DEFAULT `'{}'`)
+- `status` (ENUM `draft_status`, NOT NULL DEFAULT `'draft'`)
+- `created_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- `approved_at` (TIMESTAMPTZ, NULLABLE)
+- **RLS Policy**: `auth.uid() = user_id` (ALL operations).
 
-### 2.5. `memos`
-Deal Memos generated for public brand sign-off.
-- `id` (UUID, PK).
-- `user_id` (UUID, FK -> auth.users).
-- `deal_id` (UUID, FK -> deals).
-- `content` (JSONB): Immutable snapshot of agreed terms.
-- `accept_token_hash` (TEXT, UNIQUE): SHA-256 hash of 32-byte secret acceptance token.
-- `expires_at` (TIMESTAMPTZ): Default NOW() + 14 days.
-- `accepted_at` (TIMESTAMPTZ, NULLABLE).
-- `accepted_by_name` (TEXT, NULLABLE): Signatory name typed by brand representative.
-- `created_at` (TIMESTAMPTZ).
+### 5. `memos`
+Tamper-evident Deal Memos with single-use cryptographic acceptance tokens.
+- `id` (UUID, PK)
+- `user_id` (UUID, NOT NULL, references `auth.users(id) ON DELETE CASCADE`)
+- `deal_id` (UUID, NOT NULL, references `deals(id) ON DELETE CASCADE`)
+- `content` (JSONB, NOT NULL)
+- `accept_token_hash` (TEXT, NOT NULL UNIQUE — SHA-256 of raw token)
+- `expires_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW() + INTERVAL '14 days')
+- `accepted_at` (TIMESTAMPTZ, NULLABLE)
+- `accepted_by_name` (TEXT, NULLABLE)
+- `created_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- **RLS Policy**:
+  - Creator: `auth.uid() = user_id` (SELECT, INSERT).
+  - Public brand acceptance: Handled via secure service-role client matching `accept_token_hash`.
 
-### 2.6. `invoices`
-Compliant GST invoices with embedded UPI parameters.
-- `id` (UUID, PK).
-- `user_id` (UUID, FK -> auth.users).
-- `deal_id` (UUID, FK -> deals).
-- `invoice_number` (TEXT): Sequential FY format (e.g. `DS/2026-27/001`).
-- `issue_date`, `due_date` (DATE).
-- `supplier_snapshot`, `client_snapshot` (JSONB).
-- `line_items` (JSONB).
-- `tax` (JSONB): Breakdown of CGST, SGST, IGST in integer paise.
-- `total_paise` (BIGINT).
-- `upi_link` (TEXT): `upi://pay?...` URL.
-- `status` (invoice_status ENUM): `issued`, `paid`.
-- `created_at` (TIMESTAMPTZ).
-- UNIQUE CONSTRAINT (`user_id`, `invoice_number`).
+### 6. `invoices`
+Sequential Indian Financial Year GST tax invoices.
+- `id` (UUID, PK)
+- `user_id` (UUID, NOT NULL, references `auth.users(id) ON DELETE CASCADE`)
+- `deal_id` (UUID, NOT NULL, references `deals(id) ON DELETE CASCADE`)
+- `invoice_number` (TEXT, NOT NULL — format `DS/2026-27/001`)
+- `issue_date` (DATE, NOT NULL)
+- `due_date` (DATE, NOT NULL)
+- `supplier_snapshot` (JSONB, NOT NULL)
+- `client_snapshot` (JSONB, NOT NULL)
+- `line_items` (JSONB, NOT NULL)
+- `tax` (JSONB, NOT NULL — CGST, SGST, IGST in paise)
+- `total_paise` (BIGINT, NOT NULL)
+- `upi_link` (TEXT, NOT NULL)
+- `status` (ENUM `invoice_status`: `'issued'` | `'paid'`)
+- `created_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- **RLS Policy**: `auth.uid() = user_id` (ALL operations).
 
-### 2.7. `payments`
-Tracks actual cash realization against promised payment milestones.
-- `id` (UUID, PK).
-- `user_id` (UUID, FK -> auth.users).
-- `deal_id` (UUID, FK -> deals).
-- `paid_at` (TIMESTAMPTZ).
-- `amount_paise` (BIGINT).
-- `promised_days` (INT).
-- `actual_days` (INT).
+### 7. `payments`
+Settlement receipts feeding the Personal Brand Ledger.
+- `id` (UUID, PK)
+- `user_id` (UUID, NOT NULL, references `auth.users(id) ON DELETE CASCADE`)
+- `deal_id` (UUID, NOT NULL, references `deals(id) ON DELETE CASCADE`)
+- `amount_paise` (BIGINT, NOT NULL)
+- `promised_days` (INT, NOT NULL)
+- `actual_days` (INT, NOT NULL)
+- `paid_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- **RLS Policy**: `auth.uid() = user_id` (ALL operations).
 
-### 2.8. `audit_log`
-Append-only log of every state transition, AI action, and user consent.
-- `id` (UUID, PK).
-- `user_id` (UUID, FK -> auth.users).
-- `action` (TEXT): e.g., `deal_extracted`, `counter_approved`, `memo_signed`.
-- `entity` (TEXT): e.g., `deal`, `memo`, `invoice`.
-- `entity_id` (UUID, NULLABLE).
-- `detail` (JSONB): Sanitized event parameters (strict exclusion of raw text and PII).
-- `created_at` (TIMESTAMPTZ).
+### 8. `audit_log`
+Append-only immutable record of all creator operations and system events.
+- `id` (UUID, PK)
+- `user_id` (UUID, NOT NULL, references `auth.users(id) ON DELETE CASCADE`)
+- `action` (TEXT, NOT NULL)
+- `entity` (TEXT, NOT NULL)
+- `entity_id` (UUID, NULLABLE)
+- `detail` (JSONB, NOT NULL DEFAULT `'{}'`)
+- `created_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- **RLS Policy**: `auth.uid() = user_id` (SELECT, INSERT only; NO UPDATE or DELETE).
 
-### 2.9. `ai_usage`
-Tracks API calls for per-user rate limiting (20 requests per 10 minutes).
-- `id` (UUID, PK).
-- `user_id` (UUID, FK -> auth.users).
-- `route` (TEXT).
-- `created_at` (TIMESTAMPTZ).
+### 9. `ai_usage`
+Tracks sliding-window rate limit counters (20 req / 10 min window).
+- `id` (UUID, PK)
+- `user_id` (UUID, NOT NULL, references `auth.users(id) ON DELETE CASCADE`)
+- `route` (TEXT, NOT NULL)
+- `created_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- **RLS Policy**: `auth.uid() = user_id` (SELECT, INSERT).
 
----
+### 10. `youtube_links` (Feature 13)
+Cached public YouTube channel statistics.
+- `id` (UUID, PK)
+- `user_id` (UUID, NOT NULL, references `auth.users(id) ON DELETE CASCADE UNIQUE`)
+- `channel_id` (TEXT, NOT NULL)
+- `channel_title` (TEXT, NOT NULL)
+- `subscriber_count` (BIGINT, NOT NULL)
+- `band_suggestion` (ENUM `follower_band`, NOT NULL)
+- `fetched_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- `created_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- `updated_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- **RLS Policy**: `auth.uid() = user_id` (ALL operations).
 
-## 3. Row-Level Security (RLS) Matrix
-
-| Table | SELECT | INSERT | UPDATE | DELETE | Notes |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `profiles` | Own UID | Own UID | Own UID | Own UID | Complete user isolation |
-| `benchmarks` | Authenticated | None | None | None | Static read-only catalog |
-| `deals` | Own UID | Own UID | Own UID | Own UID | User deals only |
-| `drafts` | Own UID | Own UID | Own UID | Own UID | User drafts only |
-| `memos` | Own UID | Own UID | Own UID | Own UID | Creator view. Public memo uses service-role |
-| `invoices` | Own UID | Own UID | Own UID | Own UID | User invoices only |
-| `payments` | Own UID | Own UID | Own UID | Own UID | User payments only |
-| `audit_log` | Own UID | Own UID | **DENIED** | **DENIED** | Append-only security audit trail |
-| `ai_usage` | Own UID | Own UID | **DENIED** | **DENIED** | Append-only rate tracking |
-
+### 11. `gmail_connections` (Feature 14)
+Encrypted OAuth refresh token store for Gmail Import.
+- `id` (UUID, PK)
+- `user_id` (UUID, NOT NULL, references `auth.users(id) ON DELETE CASCADE UNIQUE`)
+- `google_email` (TEXT, NOT NULL)
+- `encrypted_refresh_token` (TEXT, NOT NULL — AES-256-GCM ciphertext)
+- `iv` (TEXT, NOT NULL — 12-byte initialization vector)
+- `auth_tag` (TEXT, NOT NULL — 16-byte authentication tag)
+- `scope` (TEXT, NOT NULL DEFAULT `'https://www.googleapis.com/auth/gmail.readonly'`)
+- `status` (TEXT, NOT NULL DEFAULT `'connected'`)
+- `connected_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- `last_used_at` (TIMESTAMPTZ, NULLABLE)
+- `created_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- `updated_at` (TIMESTAMPTZ, NOT NULL DEFAULT NOW())
+- **RLS Policy**: **NO CLIENT-FACING POLICIES**.
+  - All token access is restricted strictly to server route handlers using the service-role client.
+  - Regular client queries (`createClient()`) return zero rows, preventing client-side token exposure.

@@ -1,4 +1,4 @@
--- DealShield Benchmarks Seed Data (240 Combinations: 12 Niches x 4 Follower Bands x 5 Formats)
+-- Kreato Benchmarks Seed Data (240 Combinations: 12 Niches x 4 Follower Bands x 5 Formats)
 -- All monetary rates in integer paise (1 INR = 100 paise)
 
 INSERT INTO benchmarks (niche, follower_band, format, median_paise, min_paise, max_paise, is_simulated)

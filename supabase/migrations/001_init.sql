@@ -1,4 +1,4 @@
--- DealShield Initial Database Migration: Schema, Indexes, RLS Policies & Seed Data
+-- Kreato Initial Database Migration: Schema, Indexes, RLS Policies & Seed Data
 -- Migration: 001_init.sql
 
 -- Enable UUID extension

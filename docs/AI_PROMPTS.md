@@ -1,4 +1,4 @@
-# AI Prompts & Gemini Schemas — DealShield
+# AI Prompts & Gemini Schemas — Kreato
 
 This document specifies all system prompts, JSON schemas, delimiter formats, and validation rules used across the Gemini API integration layer.
 
@@ -6,7 +6,7 @@ This document specifies all system prompts, JSON schemas, delimiter formats, and
 
 ## 1. General Prompt Injection Defense Architecture
 
-Every AI prompt in DealShield treats user input as untrusted data:
+Every AI prompt in Kreato treats user input as untrusted data:
 1. **XML Delimiter Isolation**: Untrusted creator messages are encapsulated inside `<message>` and `</message>` tags.
 2. **Explicit Instruction Shield**: The system prompt instructs Gemini never to interpret or obey commands within `<message>`.
 3. **Structured Output Only**: All endpoints use Gemini `responseMimeType: "application/json"` and strict `responseSchema`.
@@ -49,159 +49,63 @@ EXTRACTION INSTRUCTIONS:
   - Whitelisting / paid ad rights without clear duration
   - Broad category exclusivity
   - Long payment cycles (> 30 days)
-  - Demands for registration fees, shipping fees, or advance payments
-```
-
-### 2.2. JSON Response Schema (Gemini SDK)
-```json
-{
-  "type": "OBJECT",
-  "properties": {
-    "brand_name": { "type": "STRING", "nullable": true },
-    "brand_domain": { "type": "STRING", "nullable": true },
-    "category": {
-      "type": "STRING",
-      "enum": [
-        "skincare", "haircare", "makeup", "fashion", "food_beverage",
-        "fitness", "tech_gadgets", "finance", "travel", "gaming",
-        "education", "other"
-      ]
-    },
-    "deliverables": {
-      "type": "ARRAY",
-      "items": {
-        "type": "OBJECT",
-        "properties": {
-          "format": {
-            "type": "STRING",
-            "enum": ["reel", "story", "post", "youtube_video", "short"]
-          },
-          "quantity": { "type": "INTEGER" }
-        },
-        "required": ["format", "quantity"]
-      }
-    },
-    "deadline": { "type": "STRING", "nullable": true },
-    "fee_inr": { "type": "INTEGER", "nullable": true },
-    "usage_rights": {
-      "type": "OBJECT",
-      "properties": {
-        "type": {
-          "type": "STRING",
-          "enum": ["none", "organic", "paid_ads", "perpetual", "unspecified"]
-        },
-        "months": { "type": "INTEGER", "nullable": true },
-        "paid_ads_allowed": { "type": "BOOLEAN" }
-      },
-      "required": ["type", "paid_ads_allowed"]
-    },
-    "exclusivity": {
-      "type": "OBJECT",
-      "properties": {
-        "category": { "type": "STRING", "nullable": true },
-        "days": { "type": "INTEGER", "nullable": true }
-      }
-    },
-    "payment_terms": {
-      "type": "OBJECT",
-      "properties": {
-        "days": { "type": "INTEGER", "nullable": true },
-        "advance_percent": { "type": "INTEGER", "nullable": true }
-      }
-    },
-    "risky_quotes": {
-      "type": "ARRAY",
-      "items": { "type": "STRING" }
-    }
-  },
-  "required": ["category", "deliverables", "usage_rights", "risky_quotes"]
-}
+  - Demands for registration fees, shipping fees, or advance deposits
 ```
 
 ---
 
-## 3. Counter-Offer Drafter (Walk-away Ladder)
+## 3. Counter-Offer Drafter Prompt (Walk-Away Ladder)
 
 ### 3.1. System Prompt
 ```
-You are an expert talent negotiator writing on behalf of an Indian creator.
-Your goal is to write a polite, confident, and professional counter-offer message.
+You are an expert talent negotiator writing on behalf of an Indian creator (${creatorName}).
+Your goal is to write a polite, confident, and professional counter-offer message to brand "${brandName}".
 
 STRICT NUMERICAL INTEGRITY:
-You MUST use ONLY the exact numbers provided in the input variables.
-Do NOT invent alternative fees, durations, payment terms, or discounts.
-Every single number mentioned must match the provided values.
+You MUST use ONLY the exact numbers provided:
+- Fee: ₹${counterFeeINR.toLocaleString("en-IN")}
+- Deliverables: ${deliverablesSummary}
+- Usage: ${usageTerms}
+- Payment: ${paymentTerms}
+- Exclusivity: ${exclusivityTerms}
 
 TONE & STYLE:
-- If language is 'en': Professional, warm, clear business English.
-- If language is 'hinglish': Conversational, natural urban Indian creator tone (mix of casual English and natural Hindi transliteration, e.g. "Thanks for reaching out! Reel deliverable ke liye my commercial terms are...").
-- Keep the message concise (under 120 words).
-- End with a clear call to action inviting confirmation so we can issue a Deal Memo.
+- Language '${language}':
+  - 'en': Professional Indian corporate English.
+  - 'hinglish': Professional, warm conversational Hinglish (e.g. "Budget issue samajh sakta hoon, lekin commercial rights ke liye standard rates apply hote hain...").
+- Keep email body within 150 words.
+- Emphasize mutual ROI and clear value rather than conflict.
 ```
-
-### 3.2. Input Payload Format
-```json
-{
-  "creator_name": "Jagadish",
-  "brand_name": "GlowSkin",
-  "deliverables_summary": "1 Reel + 2 Stories",
-  "counter_fee_inr": 45000,
-  "usage_terms": "Organic posting only (3 months brand reposting, no paid ad whitelisting)",
-  "payment_terms": "Net-15 days via UPI / Bank transfer",
-  "exclusivity_terms": "No category exclusivity",
-  "tier": "ideal",
-  "language": "hinglish"
-}
-```
-
-### 3.3. Response Schema
-```json
-{
-  "type": "OBJECT",
-  "properties": {
-    "subject": { "type": "STRING" },
-    "body": { "type": "STRING" }
-  },
-  "required": ["subject", "body"]
-}
-```
-
-### 3.4. Code-Level Validation
-Before accepting the draft, `/backend/services/deal.service.ts` verifies:
-- `body` contains the string representation of `counter_fee_inr` (e.g. `45,000` or `45000` or `₹45,000`).
-- If missing, the request is retried once with an explicit correction reminder.
 
 ---
 
-## 4. Payment Overdue Reminder Drafter
+## 4. Payment Reminder Drafter Prompt
 
 ### 4.1. System Prompt
 ```
-You are an assertive yet professional finance coordinator for an Indian content creator.
-Your job is to draft a payment reminder message for an overdue invoice.
+You are an assertive yet professional finance coordinator writing on behalf of Indian creator (${creatorName}) to brand "${brandName}".
+Draft a payment reminder message for an overdue invoice.
 
 TONE ESCALATION MATRIX:
-- Tier 'friendly' (1 to 7 days overdue): Gentle, helpful reminder. Assumes it was an oversight.
-- Tier 'firm' (8 to 21 days overdue): Direct, professional demand citing contractual terms and interest clauses.
-- Tier 'final' (22+ days overdue): Formal final notice warning of legal escalation, revoking content usage rights, and reporting non-payment.
+- Tone 'friendly' (1-7 days overdue): Gentle, helpful reminder. Assumes it was an oversight.
+- Tone 'firm' (8-21 days overdue): Direct, professional demand citing agreed payment terms.
+- Tone 'final' (22+ days overdue): Formal final notice warning of revoking content usage rights and legal escalation.
 
 MANDATORY INCLUSIONS:
-The draft MUST include:
-1. Exact invoice number: {invoice_number}
-2. Exact total amount: ₹{total_amount_inr}
-3. Original due date: {due_date}
-4. Number of days overdue: {days_overdue} days
+1. Invoice Number: ${invoiceNumber}
+2. Total Amount: ₹${totalAmountINR.toLocaleString("en-IN")}
+3. Original Due Date: ${dueDate}
+4. Days Overdue: ${daysOverdue} days
 ```
 
-### 4.2. Response Schema
-```json
-{
-  "type": "OBJECT",
-  "properties": {
-    "subject": { "type": "STRING" },
-    "body": { "type": "STRING" }
-  },
-  "required": ["subject", "body"]
-}
-```
+---
 
+## 5. Scope Boundaries for New Features (Features 12, 13, 14)
+
+1. **Gmail Import Beta (Feature 14)**:
+   - **Reuses Existing Prompt**: The Gmail import path strictly reuses the Deal Copilot extraction prompt (Section 2) on sanitized email bodies. No new or custom prompts are created for email extraction.
+   - **Strict Input Isolation**: Email bodies are sanitized (scripts, tracking pixels, and signatures stripped), PII-masked, and wrapped in `<message>` tags before calling Gemini 3.8 Flash.
+2. **Calendar Export (Feature 12)**:
+   - **Zero AI Required**: Purely algorithmic RFC 5545 `.ics` generation in `/lib/calendar/ics.ts`.
+3. **YouTube Public Stats (Feature 13)**:
+   - **Zero AI Required**: Purely algorithmic parsing and official Google API lookup in `/lib/youtube/` with deterministic follower band mapping.
