@@ -13,7 +13,6 @@ import {
   BookOpen,
   Bell,
   Settings,
-  Shield,
   Sparkles,
   X,
 } from "lucide-react";
@@ -71,8 +70,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           onClick={onCloseMobile}
           className="flex items-center gap-2.5 group"
         >
-          <div className="w-8 h-8 rounded-xl bg-[#000305] flex items-center justify-center text-white shadow-card transition-transform group-hover:scale-105">
-            <Shield className="w-4 h-4 text-pastel-lime" />
+          <div className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center bg-transparent transition-transform group-hover:scale-105">
+            <img
+              src="/kreato-logo.png"
+              alt="Kreato K symbol"
+              className="w-8 h-8 object-contain"
+            />
           </div>
           <div>
             <span className="font-extrabold text-base text-gray-900 tracking-tight block leading-tight">

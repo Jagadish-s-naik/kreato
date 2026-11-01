@@ -5,6 +5,11 @@ import { APP_NAME, APP_TAGLINE } from "@/lib/config/app";
 export const metadata: Metadata = {
   title: `${APP_NAME} | ${APP_TAGLINE}`,
   description: "Protecting Indian creators' income before they say yes to brand deals, then automating follow-through until they are paid.",
+  icons: {
+    icon: "/kreato-logo.png",
+    shortcut: "/kreato-logo.png",
+    apple: "/kreato-logo.png",
+  },
 };
 
 export default function RootLayout({
