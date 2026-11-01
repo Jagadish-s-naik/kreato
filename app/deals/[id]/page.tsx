@@ -505,7 +505,7 @@ export default function DealDetailPage({ params }: { params: { id: string } }) {
               <span>Deal Memo Sign-Off</span>
             </h3>
             <p className="text-xs text-slate-500">
-              Generate a brand-facing link for authorized sign-off. "Summary of terms agreed in chat. Not a legal contract."
+              Generate a brand-facing link for authorized sign-off. &ldquo;Summary of terms agreed in chat. Not a legal contract.&rdquo;
             </p>
             {memoUrl ? (
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs font-mono break-all text-indigo-600">

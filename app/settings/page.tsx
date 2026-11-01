@@ -278,7 +278,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="bg-amber-50/70 border border-amber-200/60 rounded-xl p-3 text-xs text-amber-900">
-            Google may display an 'unverified app' warning during beta testing. Click 'Advanced' -&gt; 'Go to Kreato (unsafe)' to proceed.
+            Google may display an &apos;unverified app&apos; warning during beta testing. Click &apos;Advanced&apos; -&gt; &apos;Go to Kreato (unsafe)&apos; to proceed.
           </div>
 
           {gmailStatus?.connected ? (

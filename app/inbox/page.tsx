@@ -95,7 +95,7 @@ export default function DealInboxPage() {
       const res = await fetch(`/api/gmail/search?q=${encodeURIComponent(gmailQuery)}`);
       const json = await res.json();
       if (res.ok && json.success) {
-        setGmailMessages(json.data?.messages || []);
+        setGmailMessages(Array.isArray(json.data) ? json.data : (json.data?.messages || []));
       } else {
         alert(json.error?.message || "Failed to search Gmail.");
       }
