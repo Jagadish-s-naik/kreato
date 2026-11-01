@@ -24,13 +24,16 @@ export const SignUpForm: React.FC = () => {
     setErrorMessage("");
 
     try {
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanHandle = handle.startsWith("@") ? handle.trim() : `@${handle.trim()}`;
+
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: cleanEmail,
         password: password,
         options: {
           data: {
             full_name: fullName.trim(),
-            handle: handle.startsWith("@") ? handle.trim() : `@${handle.trim()}`,
+            handle: cleanHandle,
           },
         },
       });
@@ -41,7 +44,23 @@ export const SignUpForm: React.FC = () => {
         return;
       }
 
-      if (data.session || data.user) {
+      // Immediately sign in to establish browser session cookies
+      let session = data.session;
+      if (!session) {
+        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: password,
+        });
+
+        if (signInErr) {
+          setErrorMessage(signInErr.message);
+          setLoading(false);
+          return;
+        }
+        session = signInData.session;
+      }
+
+      if (session) {
         router.push("/dashboard");
         router.refresh();
       }
@@ -236,7 +255,7 @@ export const SignUpForm: React.FC = () => {
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>SAC 998365 Tax Invoice Generated</span>
             </div>
-            <div className="text-lg font-black text-slate-900">
+            <div className="lg text-lg font-black text-slate-900">
               ₹85,000.00 Settled
             </div>
             <div className="text-xs text-slate-500 mt-1">

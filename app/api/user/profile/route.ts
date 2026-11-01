@@ -17,19 +17,44 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { data: profile, error } = await supabase
+    let { data: profile, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (error && error.code !== "PGRST116") {
       throw error;
     }
 
+    if (!profile) {
+      const rawName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Creator";
+      const rawHandle = user.user_metadata?.handle || `@${user.email?.split("@")[0] || "creator"}`;
+      const cleanVpa = `${rawHandle.replace(/[^a-zA-Z0-9]/g, "")}@icici`;
+
+      const { data: newProfile } = await (supabase as any)
+        .from("profiles")
+        .upsert({
+          id: user.id,
+          display_name: rawName,
+          upi_vpa: cleanVpa,
+          niche: "other",
+          follower_band: "micro_50k_100k",
+          state: "Maharashtra",
+        })
+        .select()
+        .single();
+
+      profile = newProfile;
+    }
+
     return NextResponse.json({
       success: true,
-      data: profile || null,
+      data: {
+        ...(profile || {}),
+        email: user.email,
+        handle: user.user_metadata?.handle || `@${user.email?.split("@")[0] || "creator"}`,
+      },
     });
   } catch (err: any) {
     console.error("Profile GET error:", err);

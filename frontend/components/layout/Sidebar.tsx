@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -11,12 +11,12 @@ import {
   FileCheck,
   Receipt,
   BookOpen,
-  Bell,
   Settings,
   Sparkles,
   X,
+  LogOut,
 } from "lucide-react";
-import { mockCreatorProfile } from "@/frontend/data/mockKreatoData";
+import { createClient } from "@/backend/supabase/client";
 
 interface NavItem {
   id: string;
@@ -33,6 +33,46 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
   const pathname = usePathname();
+  const [profile, setProfile] = useState<{
+    name: string;
+    handle: string;
+    initials: string;
+  } | null>(null);
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const res = await fetch("/api/user/profile");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            const name = json.data.display_name || json.data.email?.split("@")[0] || "Creator";
+            const handle = json.data.handle || `@${json.data.email?.split("@")[0] || "creator"}`;
+            const initials = name
+              .split(" ")
+              .map((n: string) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2);
+            setProfile({ name, handle, initials });
+          }
+        }
+      } catch (err) {
+        // Fallback
+      }
+    }
+    loadUser();
+  }, []);
+
+  const handleSignOut = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      window.location.href = "/login";
+    } catch (e) {
+      window.location.href = "/login";
+    }
+  };
 
   const coreNav: NavItem[] = [
     { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: Compass },
@@ -99,43 +139,44 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
         )}
       </div>
 
-      {/* Nav Lists */}
-      <div className="flex-1 overflow-y-auto space-y-5 pr-0.5">
-        {/* Core Menu */}
+      {/* Main Navigation Stack */}
+      <div className="flex-1 space-y-6 overflow-y-auto pr-1">
+        {/* Core Deal Operations */}
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 mb-1.5 block">
-            Core Workflow
-          </span>
+          <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+            Operations
+          </p>
           <nav className="space-y-1">
             {coreNav.map((item) => {
               const Icon = item.icon;
               const isActive =
-                pathname === item.href ||
-                (item.href !== "/dashboard" && pathname?.startsWith(item.href));
+                item.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname?.startsWith(item.href);
+
               return (
                 <Link
                   key={item.id}
                   href={item.href}
                   onClick={onCloseMobile}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-semibold transition-all ${
+                  className={`flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-semibold transition-all ${
                     isActive
-                      ? "bg-[#000305] text-white shadow-soft"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-white/70"
+                      ? "bg-white text-gray-900 shadow-card font-bold"
+                      : "text-gray-500 hover:text-gray-900 hover:bg-white/50"
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
                     <Icon
                       className={`w-4 h-4 ${
-                        isActive ? "text-pastel-lime" : "text-gray-500"
+                        isActive ? "text-indigo-600" : "text-gray-400"
                       }`}
                     />
                     <span>{item.label}</span>
                   </div>
+
                   {item.badge && (
                     <span
-                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                        isActive ? "bg-white/20 text-white" : item.badgeColor
-                      }`}
+                      className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}
                     >
                       {item.badge}
                     </span>
@@ -146,32 +187,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           </nav>
         </div>
 
-        {/* Income Defense */}
+        {/* Commercial & Compliance */}
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 mb-1.5 block">
-            Income Defense
-          </span>
+          <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+            Commercial Defense
+          </p>
           <nav className="space-y-1">
             {financialNav.map((item) => {
               const Icon = item.icon;
               const isActive = pathname?.startsWith(item.href);
+
               return (
                 <Link
                   key={item.id}
                   href={item.href}
                   onClick={onCloseMobile}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-2xl text-xs font-semibold transition-all ${
+                  className={`flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-semibold transition-all ${
                     isActive
-                      ? "bg-[#000305] text-white shadow-soft"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-white/70"
+                      ? "bg-white text-gray-900 shadow-card font-bold"
+                      : "text-gray-500 hover:text-gray-900 hover:bg-white/50"
                   }`}
                 >
-                  <Icon
-                    className={`w-4 h-4 ${
-                      isActive ? "text-pastel-lime" : "text-gray-500"
-                    }`}
-                  />
-                  <span>{item.label}</span>
+                  <div className="flex items-center gap-2.5">
+                    <Icon
+                      className={`w-4 h-4 ${
+                        isActive ? "text-indigo-600" : "text-gray-400"
+                      }`}
+                    />
+                    <span>{item.label}</span>
+                  </div>
                 </Link>
               );
             })}
@@ -196,21 +240,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
       <div className="mt-3 pt-2">
         <div className="bg-white/95 rounded-2xl p-2.5 shadow-soft border border-white/80 flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <img
-              src={mockCreatorProfile.avatarUrl}
-              alt={mockCreatorProfile.name}
-              className="w-7 h-7 rounded-full object-cover ring-1 ring-gray-100"
-            />
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 text-white font-extrabold text-[10px] flex items-center justify-center shrink-0 shadow-xs">
+              {profile?.initials || "CR"}
+            </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-gray-900 truncate">
-                {mockCreatorProfile.name}
+                {profile?.name || "Creator Profile"}
               </p>
               <p className="text-[10px] text-gray-400 truncate">
-                {mockCreatorProfile.handle}
+                {profile?.handle || "@creator"}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1 text-gray-400">
+          <div className="flex items-center gap-0.5 text-gray-400">
             <Link
               href="/settings"
               className="p-1 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
@@ -218,6 +260,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
             >
               <Settings className="w-3.5 h-3.5" />
             </Link>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="p-1 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
