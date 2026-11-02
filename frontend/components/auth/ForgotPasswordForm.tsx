@@ -2,106 +2,137 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Mail } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
+import { createClient } from "@/backend/supabase/client";
 
 export const ForgotPasswordForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const supabase = createClient();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    if (!email) return;
+
+    setLoading(true);
+    setErrorMessage("");
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/login`,
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        setLoading(false);
+        return;
+      }
+
       setSubmitted(true);
+      setLoading(false);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to send reset email.");
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFC] flex flex-col justify-center items-center px-4 sm:px-6 py-12">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 group mb-6">
-            <div className="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105">
+    <div className="min-h-screen w-full bg-white text-slate-900 font-sans flex flex-col justify-center items-center px-4 sm:px-6 py-12">
+      <div className="w-full max-w-[380px] sm:max-w-[400px]">
+        {/* Centered Kreato Logo */}
+        <div className="flex flex-col items-center mb-7">
+          <Link href="/" className="inline-flex items-center gap-2.5 group mb-5">
+            <div className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105">
               <img
                 src="/kreato-logo.png"
-                alt="Kreato logo"
-                className="w-10 h-10 object-contain"
+                alt="Kreato"
+                className="w-8 h-8 object-contain"
               />
             </div>
-            <span className="font-extrabold text-2xl text-slate-900 tracking-tight">
+            <span className="font-extrabold text-2xl text-slate-950 tracking-tight">
               Kreato
             </span>
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
+
+          {/* Centered Heading */}
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight text-center">
             Reset password
           </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Enter the email address tied to your Kreato account.
+          <p className="mt-2 text-sm text-slate-500 text-center font-normal">
+            Enter the email address tied to your creator account.
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-lg">
-          {submitted ? (
-            <div className="text-center py-4 space-y-4">
-              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-lg">
-                Password reset link sent
-              </h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                If an account exists for <strong className="text-slate-900">{email}</strong>, you will receive instructions to reset your password shortly.
-              </p>
-              <div className="pt-4">
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-2 text-sm font-bold text-[#3C55F5] hover:underline"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>Return to Sign In</span>
-                </Link>
-              </div>
+        {errorMessage && (
+          <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {submitted ? (
+          <div className="text-center py-6 space-y-4">
+            <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100">
+              <CheckCircle2 className="w-6 h-6" />
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Account Email
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    required
-                    placeholder="aanya@creator.in"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#3C55F5] focus:border-transparent text-sm text-slate-900 transition-all placeholder:text-slate-400"
-                  />
-                </div>
-              </div>
+            <h3 className="font-extrabold text-slate-900 text-lg">
+              Password reset link sent
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              If an account exists for <strong className="text-slate-900">{email}</strong>, you will receive instructions to reset your password shortly.
+            </p>
+            <div className="pt-4">
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 text-sm font-bold text-[#4056F4] hover:underline"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Return to Sign In</span>
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <input
+                type="email"
+                required
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full h-12 px-4 rounded-xl bg-white border border-slate-200 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#4056F4] focus:ring-2 focus:ring-[#8AA4FF]/40 transition-all font-normal"
+              />
+            </div>
 
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  className="w-full py-3.5 px-6 rounded-xl bg-[#3C55F5] hover:bg-[#2D44E0] active:scale-[0.99] text-white font-bold text-sm shadow-md transition-all"
-                >
-                  Send Recovery Link
-                </button>
-              </div>
+            <div className="pt-1">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 rounded-xl bg-[#111421] hover:bg-black active:scale-[0.99] text-white font-bold text-sm sm:text-base shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+              >
+                {loading ? (
+                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <span>Send Recovery Link</span>
+                )}
+              </button>
+            </div>
 
-              <div className="text-center pt-2">
-                <Link
-                  href="/login"
-                  className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors inline-flex items-center gap-1.5"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Back to login</span>
-                </Link>
-              </div>
-            </form>
-          )}
-        </div>
+            <div className="text-center pt-3">
+              <Link
+                href="/login"
+                className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors inline-flex items-center gap-1.5"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to login</span>
+              </Link>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
 };
-
