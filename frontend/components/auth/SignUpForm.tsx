@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
+import { motion } from "framer-motion";
 import { createClient } from "@/backend/supabase/client";
 
 export const SignUpForm: React.FC = () => {
@@ -70,104 +71,113 @@ export const SignUpForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-white">
-      {/* LEFT COLUMN: Registration Form (45%) */}
-      <div className="w-full lg:w-[48%] flex flex-col justify-between p-6 sm:p-12 lg:p-16 xl:p-20">
+    <div className="min-h-screen w-full bg-white text-slate-900 font-sans flex flex-col lg:flex-row">
+      {/* ============================================================ */}
+      {/* LEFT COLUMN: Registration Form (approx 44% width on desktop) */}
+      {/* ============================================================ */}
+      <div className="w-full lg:w-[44%] flex flex-col justify-between px-6 py-8 sm:px-12 sm:py-12 lg:px-16 lg:py-14 xl:px-20 xl:py-16">
         <div>
-          {/* Logo & Header */}
+          {/* Official Kreato Brand Header */}
           <Link href="/" className="inline-flex items-center gap-2.5 mb-10 group">
-            <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105">
+            <div className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105">
               <img
                 src="/kreato-logo.png"
-                alt="Kreato logo"
-                className="w-9 h-9 object-contain"
+                alt="Kreato"
+                className="w-8 h-8 object-contain"
               />
             </div>
-            <span className="font-extrabold text-xl text-slate-900 tracking-tight">
+            <span className="font-extrabold text-xl text-slate-950 tracking-tight">
               Kreato
             </span>
           </Link>
 
-          <div className="max-w-md">
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight mb-2">
-              Create your Kreato account.
+          {/* Clean Modern Sans-Serif Heading */}
+          <div className="max-w-[420px]">
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight leading-tight">
+              Create your Kreato account
             </h1>
-            <p className="text-sm sm:text-base text-slate-600 mb-8">
-              Start managing your brand deals, auditing contracts, and protecting your income with confidence.
+            <p className="mt-3 text-sm sm:text-base text-slate-500 font-normal leading-relaxed">
+              Start managing your creator business, protecting your income and organizing every brand collaboration.
             </p>
 
             {errorMessage && (
-              <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+              <div className="mt-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Registration Form with 4 Mandatory Fields */}
+            <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+              {/* FIELD 1: Full Name */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Full Name
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Aanya Sharma"
+                  placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#3C55F5] focus:border-transparent text-sm text-slate-900 transition-all placeholder:text-slate-400"
+                  className="w-full h-13 px-4 rounded-xl bg-white border border-slate-200 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#4056F4] focus:ring-2 focus:ring-[#8AA4FF]/40 transition-all"
                 />
               </div>
 
+              {/* FIELD 2: Creator Handle / Username */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Creator Handle / Channel
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Creator Username / Handle
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm select-none">
                     @
                   </span>
                   <input
                     type="text"
                     required
                     placeholder="yourhandle"
-                    value={handle}
+                    value={handle.replace(/^@/, "")}
                     onChange={(e) => setHandle(e.target.value)}
-                    className="w-full pl-9 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#3C55F5] focus:border-transparent text-sm text-slate-900 transition-all placeholder:text-slate-400"
+                    className="w-full h-13 pl-9 pr-4 rounded-xl bg-white border border-slate-200 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#4056F4] focus:ring-2 focus:ring-[#8AA4FF]/40 transition-all font-medium"
                   />
                 </div>
               </div>
 
+              {/* FIELD 3: Email Address */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Email Address
                 </label>
                 <input
                   type="email"
                   required
-                  placeholder="aanya@creator.in"
+                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#3C55F5] focus:border-transparent text-sm text-slate-900 transition-all placeholder:text-slate-400"
+                  className="w-full h-13 px-4 rounded-xl bg-white border border-slate-200 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#4056F4] focus:ring-2 focus:ring-[#8AA4FF]/40 transition-all"
                 />
               </div>
 
+              {/* FIELD 4: Password */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Password
                 </label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     required
-                    placeholder="••••••••••••"
+                    placeholder="Create a secure password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 pr-11 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#3C55F5] focus:border-transparent text-sm text-slate-900 transition-all"
+                    className="w-full h-13 px-4 pr-11 rounded-xl bg-white border border-slate-200 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#4056F4] focus:ring-2 focus:ring-[#8AA4FF]/40 transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -178,17 +188,18 @@ export const SignUpForm: React.FC = () => {
                 </div>
               </div>
 
+              {/* Primary CTA: Continue -> */}
               <div className="pt-2">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 px-6 rounded-xl bg-[#3C55F5] hover:bg-[#2D44E0] active:scale-[0.99] text-white font-bold text-sm shadow-md hover:shadow-indigo-500/25 flex items-center justify-center gap-2 transition-all disabled:opacity-70"
+                  className="w-full h-12 rounded-xl bg-[#4056F4] hover:bg-[#3046DD] active:scale-[0.99] text-white font-bold text-sm sm:text-base shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                 >
                   {loading ? (
                     <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
-                      <span>Create Free Account</span>
+                      <span>Continue</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -196,82 +207,168 @@ export const SignUpForm: React.FC = () => {
               </div>
             </form>
 
-            <p className="mt-5 text-xs text-slate-500 leading-relaxed text-center">
-              By joining Kreato, you agree to our Terms of Service and Privacy Policy. Zero credit card required.
-            </p>
+            {/* Existing account link */}
+            <div className="mt-6 text-center sm:text-left text-sm text-slate-600">
+              Already have an account?{" "}
+              <Link
+                href="/login"
+                className="font-bold text-[#4056F4] hover:underline"
+              >
+                Log in
+              </Link>
+            </div>
           </div>
         </div>
 
-        {/* Form Footer Link */}
-        <div className="pt-8 mt-8 border-t border-slate-100 text-sm text-slate-600">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="font-bold text-[#3C55F5] hover:underline"
-          >
-            Sign in
-          </Link>
+        {/* Terms and Privacy Footer */}
+        <div className="pt-8 mt-6 text-xs text-slate-400 leading-relaxed max-w-[420px]">
+          By signing up, you agree to Kreato's Terms of Service and Privacy Policy.
         </div>
       </div>
 
-      {/* RIGHT COLUMN: Visual Showcase Composition (52%) */}
-      <div className="hidden lg:flex w-[52%] bg-gradient-to-br from-indigo-50/70 via-slate-50 to-purple-50/60 p-12 xl:p-16 flex-col justify-center items-center relative overflow-hidden border-l border-slate-100">
-        {/* Background Aura */}
-        <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-purple-200/40 rounded-full blur-3xl pointer-events-none" />
+      {/* ============================================================ */}
+      {/* RIGHT COLUMN: Spacious White Showcase Composition (56%)     */}
+      {/* ============================================================ */}
+      <div className="hidden lg:flex w-[56%] bg-white flex-col justify-center items-center p-8 xl:p-14 relative overflow-hidden">
+        {/* Composition Container */}
+        <div className="w-full max-w-xl flex flex-col items-center">
+          {/* Main Visual: Center Device Frame with Floating Cards */}
+          <div className="relative w-full flex items-center justify-center py-6">
+            {/* Center Smartphone Mockup with Kreato Creator Business Interface */}
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              className="relative z-20 w-[290px] xl:w-[320px] rounded-[44px] p-2.5 bg-slate-950 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.18)] border-[3px] border-slate-800"
+            >
+              {/* Phone Inner Bezel & Screen */}
+              <div className="relative rounded-[36px] bg-slate-900 text-white overflow-hidden aspect-[9/18.5] flex flex-col p-4">
+                {/* Dynamic Island / Notch */}
+                <div className="w-24 h-4 bg-black rounded-full mx-auto mb-3 shrink-0" />
 
-        <div className="max-w-md w-full relative z-10 space-y-6">
-          <div className="text-center mb-6">
-            <span className="text-xs font-bold text-[#3C55F5] uppercase tracking-wider bg-white/80 px-3 py-1 rounded-full shadow-xs border border-indigo-100">
-              The Creator Defense Engine
-            </span>
-            <h2 className="text-2xl font-black text-slate-900 mt-3">
-              Never get underpriced again.
+                {/* Creator Header Inside Phone */}
+                <div className="flex items-center gap-2.5 pb-3 border-b border-slate-800">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#4056F4] to-[#54D2B9] flex items-center justify-center font-bold text-xs text-white">
+                    AS
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold truncate">Aanya Sharma</div>
+                    <div className="text-[10px] text-emerald-400 font-medium">● 450K Reach • Mumbai</div>
+                  </div>
+                </div>
+
+                {/* KPI Tiles inside phone */}
+                <div className="grid grid-cols-2 gap-2 my-3">
+                  <div className="bg-slate-800/80 rounded-xl p-2.5 border border-slate-700/60">
+                    <div className="text-[10px] text-slate-400 font-medium">Pipelines</div>
+                    <div className="text-sm font-extrabold text-white mt-0.5">₹2,45,000</div>
+                  </div>
+                  <div className="bg-slate-800/80 rounded-xl p-2.5 border border-slate-700/60">
+                    <div className="text-[10px] text-emerald-400 font-medium">Settled UPI</div>
+                    <div className="text-sm font-extrabold text-white mt-0.5">₹1,85,400</div>
+                  </div>
+                </div>
+
+                {/* Deal Inbox Preview Item */}
+                <div className="bg-slate-800/90 rounded-xl p-3 border border-slate-700/80 space-y-1.5 mb-2.5">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="font-bold text-indigo-300">GlowSkin India</span>
+                    <span className="text-rose-400 font-semibold bg-rose-950/60 px-1.5 py-0.5 rounded">Risk Flagged</span>
+                  </div>
+                  <div className="text-[11px] text-slate-300">
+                    Perpetual rights removed • Countered at ₹75,000
+                  </div>
+                </div>
+
+                {/* Invoice Status Item */}
+                <div className="bg-slate-800/60 rounded-xl p-2.5 border border-slate-700/40 mt-auto">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-slate-400">SAC 998365 Invoice</span>
+                    <span className="text-emerald-400 font-bold">Cleared</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* FLOATING CARD 1: TOP RIGHT - Brand Collaboration Invitation Card */}
+            <motion.div
+              animate={{ y: [0, -8, 0], rotate: [2, 1, 2] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -top-2 -right-4 xl:-right-8 z-30 bg-white rounded-2xl p-3.5 shadow-xl border border-slate-100 max-w-[210px] text-left"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  Brand Collaboration
+                </span>
+              </div>
+              <div className="text-xs font-bold text-slate-900 leading-snug">
+                Mamaearth Campaign
+              </div>
+              <div className="text-[11px] text-emerald-600 font-bold mt-1">
+                ₹90,000 Verified Rate
+              </div>
+            </motion.div>
+
+            {/* FLOATING CARD 2: LEFT - Money Leak Radar Card */}
+            <motion.div
+              animate={{ y: [0, 8, 0], rotate: [-2, -1, -2] }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-1/4 -left-6 xl:-left-12 z-30 bg-white rounded-2xl p-3.5 shadow-xl border border-rose-100 max-w-[210px] text-left"
+            >
+              <div className="text-[10px] font-extrabold text-rose-600 uppercase tracking-wider mb-0.5">
+                Money Leak Radar
+              </div>
+              <div className="text-xs font-bold text-slate-800 leading-snug">
+                Perpetual whitelisting flagged
+              </div>
+              <div className="text-[11px] font-black text-rose-600 mt-1">
+                +₹50,000 exposure saved
+              </div>
+            </motion.div>
+
+            {/* FLOATING CARD 3: RIGHT - Payment Received Notification */}
+            <motion.div
+              animate={{ y: [0, -6, 0], rotate: [1, 2, 1] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute bottom-16 -right-6 xl:-right-10 z-30 bg-white rounded-2xl p-3 shadow-xl border border-emerald-100 max-w-[200px] text-left"
+            >
+              <div className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider mb-0.5">
+                Payment Confirmed
+              </div>
+              <div className="text-sm font-black text-slate-900">
+                ₹85,000 Received
+              </div>
+              <div className="text-[10px] text-slate-400">
+                Nykaa Fashion • Net-15 UPI
+              </div>
+            </motion.div>
+
+            {/* FLOATING CARD 4: BOTTOM LEFT - Deal Copilot Counter Ladder */}
+            <motion.div
+              animate={{ y: [0, 7, 0], rotate: [-1, -2, -1] }}
+              transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -bottom-2 -left-4 xl:-left-8 z-30 bg-white rounded-2xl p-3 shadow-xl border border-slate-100 max-w-[190px] text-left"
+            >
+              <div className="text-[10px] font-bold text-[#4056F4] uppercase tracking-wider mb-0.5">
+                Copilot Ladder
+              </div>
+              <div className="text-xs font-bold text-slate-900">
+                Floor: ₹60,000
+              </div>
+              <div className="text-[10px] text-slate-500">
+                Target: ₹75,000
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Supporting Text Below Visual Composition */}
+          <div className="mt-8 text-center max-w-md">
+            <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+              Your creator business, connected.
             </h2>
-          </div>
-
-          {/* Floating Card: Leak Radar */}
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl p-5 shadow-lg border border-slate-200/70">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-slate-800">
-                GlowSkin India Campaign
-              </span>
-              <span className="text-[11px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
-                ₹1.49L Leak Prevented
-              </span>
-            </div>
-            <div className="text-xs text-slate-500 mb-3">
-              Kreato Copilot flagged perpetual whitelisting & 60-day exclusivity on a ₹25,000 offer.
-            </div>
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-500">Counter-Offer Accepted:</span>
-              <span className="font-extrabold text-emerald-600">₹75,000 + GST</span>
-            </div>
-          </div>
-
-          {/* Floating Card: Fast Invoicing */}
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl p-5 shadow-lg border border-slate-200/70">
-            <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 mb-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>SAC 998365 Tax Invoice Generated</span>
-            </div>
-            <div className="lg text-lg font-black text-slate-900">
-              ₹85,000.00 Settled
-            </div>
-            <div className="text-xs text-slate-500 mt-1">
-              Nykaa Fashion • Cleared on time via UPI
-            </div>
-          </div>
-
-          <div className="pt-4 flex items-center justify-center gap-6 text-xs text-slate-500">
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>No commission</span>
-            </div>
-            <span>•</span>
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#3C55F5]" />
-              <span>100% Privacy</span>
-            </div>
+            <p className="mt-2 text-xs sm:text-sm text-slate-500 font-normal leading-relaxed">
+              From brand enquiries and commercial protection to invoices and payments, manage every important business workflow in one place.
+            </p>
           </div>
         </div>
       </div>

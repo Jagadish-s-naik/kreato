@@ -15,7 +15,7 @@ export interface LayoutTextFlipProps {
 export const LayoutTextFlip: React.FC<LayoutTextFlipProps> = ({
   text = "",
   words,
-  duration = 3000,
+  duration = 3200,
   className,
   textClassName,
 }) => {
@@ -30,23 +30,21 @@ export const LayoutTextFlip: React.FC<LayoutTextFlipProps> = ({
   }, [words, duration]);
 
   return (
-    <span className={cn("inline-flex flex-col sm:inline items-baseline", className)}>
+    <span className={cn("inline-flex flex-col sm:inline items-center justify-center", className)}>
       {text && <span className="inline mr-2 sm:mr-3">{text}</span>}
-      <span className="relative inline-block overflow-hidden min-w-[280px] sm:min-w-[420px] lg:min-w-[500px] text-left">
+      <span className="relative inline-block overflow-visible text-center sm:text-left">
         <AnimatePresence mode="wait">
           <motion.span
             key={words[currentIndex]}
-            initial={{ y: 40, opacity: 0, filter: "blur(8px)" }}
+            initial={{ y: 24, opacity: 0, filter: "blur(4px)" }}
             animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-            exit={{ y: -40, opacity: 0, filter: "blur(8px)" }}
+            exit={{ y: -24, opacity: 0, filter: "blur(4px)" }}
             transition={{
-              type: "spring",
-              stiffness: 140,
-              damping: 18,
-              mass: 0.8,
+              duration: 0.45,
+              ease: [0.22, 1, 0.36, 1],
             }}
             className={cn(
-              "inline-block bg-gradient-to-r from-[#3C55F5] via-[#54D2B9] to-[#8A7AF0] bg-clip-text text-transparent font-black tracking-tight",
+              "inline-block bg-gradient-to-r from-[#3C55F5] via-[#4F6AF8] to-[#54D2B9] bg-clip-text text-transparent font-black tracking-tight",
               textClassName
             )}
           >
@@ -57,4 +55,3 @@ export const LayoutTextFlip: React.FC<LayoutTextFlipProps> = ({
     </span>
   );
 };
-
