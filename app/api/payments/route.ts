@@ -18,12 +18,26 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const {
+    let {
       deal_id,
+      invoice_id,
       amount_paise,
       promised_days = 15,
       actual_days = 15,
     } = body;
+
+    if ((!deal_id || !amount_paise) && invoice_id) {
+      const { data: inv } = await (supabase.from("invoices") as any)
+        .select("id, deal_id, total_paise")
+        .eq("id", invoice_id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (inv) {
+        if (!deal_id) deal_id = inv.deal_id;
+        if (!amount_paise) amount_paise = inv.total_paise;
+      }
+    }
 
     if (!deal_id || !amount_paise) {
       return NextResponse.json(

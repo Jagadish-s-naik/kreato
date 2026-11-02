@@ -128,9 +128,10 @@ ${userMessage}
       await recordAiUsage(supabase, userId, route);
       return parsedJson as T;
     } catch (err: any) {
-      // If quota or rate-limit error, silently try the next candidate
+      // If quota or rate-limit error, don't stall for minutes - break immediately
       const isQuota = err?.message?.includes("429") || err?.message?.includes("Quota exceeded") || err?.status === 429;
-      if (!isQuota) {
+      if (isQuota) {
+        console.warn("Gemini quota exceeded (429), bypassing remaining Google models to prevent delays.");
         break;
       }
     }
@@ -144,27 +145,69 @@ ${userMessage}
 // 1. DEAL EXTRACTION SCHEMA & CALL
 // ==========================================
 
+const deliverableFormatSchema = z.preprocess((val) => {
+  if (typeof val === "string") {
+    const s = val.toLowerCase().trim();
+    if (s.includes("reel")) return "reel";
+    if (s.includes("story")) return "story";
+    if (s.includes("short")) return "short";
+    if (s.includes("post") || s.includes("photo") || s.includes("static")) return "post";
+    if (s.includes("youtube") || s.includes("video")) return "youtube_video";
+  }
+  return val;
+}, z.enum(["reel", "story", "post", "youtube_video", "short"]).default("reel"));
+
+const categorySchema = z.preprocess((val) => {
+  if (typeof val === "string") {
+    const s = val.toLowerCase().trim();
+    if (s.includes("skin")) return "skincare";
+    if (s.includes("hair")) return "haircare";
+    if (s.includes("make") || s.includes("cosmetic") || s.includes("beauty")) return "makeup";
+    if (s.includes("fashion") || s.includes("cloth") || s.includes("apparel")) return "fashion";
+    if (s.includes("food") || s.includes("bev") || s.includes("drink")) return "food_beverage";
+    if (s.includes("fit") || s.includes("gym") || s.includes("health")) return "fitness";
+    if (s.includes("tech") || s.includes("gadget") || s.includes("software")) return "tech_gadgets";
+    if (s.includes("fin") || s.includes("money") || s.includes("crypto") || s.includes("bank")) return "finance";
+    if (s.includes("travel")) return "travel";
+    if (s.includes("game") || s.includes("gaming")) return "gaming";
+    if (s.includes("edu")) return "education";
+  }
+  return "other";
+}, z.enum([
+  "skincare",
+  "haircare",
+  "makeup",
+  "fashion",
+  "food_beverage",
+  "fitness",
+  "tech_gadgets",
+  "finance",
+  "travel",
+  "gaming",
+  "education",
+  "other",
+]).default("other"));
+
+const usageTypeSchema = z.preprocess((val) => {
+  if (typeof val === "string") {
+    const s = val.toLowerCase().trim();
+    if (s.includes("perpetual")) return "perpetual";
+    if (s.includes("paid") || s.includes("ad")) return "paid_ads";
+    if (s.includes("organic")) return "organic";
+    if (s.includes("unspecified")) return "unspecified";
+    if (s.includes("none")) return "none";
+  }
+  return "none";
+}, z.enum(["none", "organic", "paid_ads", "perpetual", "unspecified"]).default("none"));
+
 export const DealExtractionZodSchema = z.object({
   brand_name: z.string().nullable().optional(),
   brand_domain: z.string().nullable().optional(),
-  category: z.enum([
-    "skincare",
-    "haircare",
-    "makeup",
-    "fashion",
-    "food_beverage",
-    "fitness",
-    "tech_gadgets",
-    "finance",
-    "travel",
-    "gaming",
-    "education",
-    "other",
-  ]).default("other"),
+  category: categorySchema,
   deliverables: z
     .array(
       z.object({
-        format: z.enum(["reel", "story", "post", "youtube_video", "short"]),
+        format: deliverableFormatSchema,
         quantity: z.number().int().positive().default(1),
       })
     )
@@ -173,9 +216,7 @@ export const DealExtractionZodSchema = z.object({
   fee_inr: z.number().int().nullable().optional(),
   usage_rights: z
     .object({
-      type: z
-        .enum(["none", "organic", "paid_ads", "perpetual", "unspecified"])
-        .default("none"),
+      type: usageTypeSchema,
       months: z.number().int().nullable().optional(),
       paid_ads_allowed: z.boolean().default(false),
     })

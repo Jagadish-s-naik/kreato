@@ -134,8 +134,19 @@ function DealInboxContent() {
       });
       const json = await res.json();
       if (res.ok && json.success) {
-        alert(`Successfully imported ${json.data?.imported || selectedMails.length} deals!`);
-        router.push("/deals");
+        const count = json.data?.imported || 0;
+        if (count > 0) {
+          alert(`Successfully imported ${count} deal${count > 1 ? "s" : ""} to your workspace!`);
+          router.push("/deals");
+        } else {
+          const reason = json.data?.skipped_details?.[0]?.reason;
+          if (reason === "already_imported") {
+            alert("This collaboration email has already been imported into your Deal Workspace!");
+            router.push("/deals");
+          } else {
+            alert(`Email scanned, but was skipped: ${reason || "already processed"}.`);
+          }
+        }
       } else {
         alert(json.error?.message || "Failed to import selected emails.");
       }

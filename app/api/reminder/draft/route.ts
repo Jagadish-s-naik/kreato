@@ -22,14 +22,31 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       deal_id,
+      invoice_id,
       tone = "firm",
       language = "en",
       days_overdue = 14,
     } = body;
 
-    if (!deal_id) {
+    let targetDealId = deal_id;
+    let preloadedInvoice: any = null;
+
+    if (!targetDealId && invoice_id) {
+      const { data: inv } = await (supabase.from("invoices") as any)
+        .select("*, deals(*)")
+        .eq("id", invoice_id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (inv) {
+        targetDealId = inv.deal_id;
+        preloadedInvoice = inv;
+      }
+    }
+
+    if (!targetDealId) {
       return NextResponse.json(
-        { success: false, error: { code: "BAD_REQUEST", message: "deal_id is required." } },
+        { success: false, error: { code: "BAD_REQUEST", message: "deal_id or invoice_id is required." } },
         { status: 400 }
       );
     }
@@ -38,7 +55,7 @@ export async function POST(req: NextRequest) {
     const { data: dealData } = await supabase
       .from("deals")
       .select("*, invoices(*)")
-      .eq("id", deal_id)
+      .eq("id", targetDealId)
       .eq("user_id", user.id)
       .single();
 
@@ -82,7 +99,7 @@ export async function POST(req: NextRequest) {
       .from("drafts") as any)
       .insert({
         user_id: user.id,
-        deal_id,
+        deal_id: targetDealId,
         kind: "reminder",
         language,
         body: draft.body,
@@ -105,7 +122,7 @@ export async function POST(req: NextRequest) {
       action: "REMINDER_DRAFTED",
       entity: "draft",
       entityId: draftRecord?.id,
-      detail: { dealId: deal_id, tone, daysOverdue: Number(days_overdue) },
+      detail: { dealId: targetDealId, tone, daysOverdue: Number(days_overdue) },
     });
 
     return NextResponse.json({
