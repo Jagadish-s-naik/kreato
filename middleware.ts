@@ -38,7 +38,44 @@ export async function middleware(request: NextRequest) {
   });
 
   // Refresh auth session
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const pathname = request.nextUrl.pathname;
+
+  // Protected creator app routes (page navigation only)
+  const isProtectedAppRoute =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/inbox") ||
+    pathname.startsWith("/deals") ||
+    pathname.startsWith("/radar") ||
+    pathname.startsWith("/contracts") ||
+    pathname.startsWith("/invoices") ||
+    pathname.startsWith("/ledger") ||
+    pathname.startsWith("/settings");
+
+  if (!user && isProtectedAppRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    const redirectResponse = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    return redirectResponse;
+  }
+
+  // Auth pages (login, signup) - if user is already authenticated, take them directly to dashboard
+  const isAuthRoute = pathname === "/login" || pathname === "/signup";
+  if (user && isAuthRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    const redirectResponse = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    return redirectResponse;
+  }
 
   return supabaseResponse;
 }

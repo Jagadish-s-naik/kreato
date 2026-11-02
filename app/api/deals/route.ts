@@ -4,6 +4,8 @@ import { slugifyBrandName } from "@/backend/services/deal.service";
 import { logAuditEvent } from "@/backend/services/audit.service";
 import { Json } from "@/backend/supabase/database.types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const supabase = createClient();

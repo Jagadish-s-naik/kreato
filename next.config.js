@@ -6,6 +6,18 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["@google/genai", "@react-pdf/renderer"],
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "yt3.ggpht.com",
+      },
+    ],
+  },
   // Security headers
   async headers() {
     return [
