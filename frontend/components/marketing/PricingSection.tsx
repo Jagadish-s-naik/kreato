@@ -26,21 +26,19 @@ export const PricingSection: React.FC = () => {
           <div className="mt-8 inline-flex items-center gap-3 p-1.5 rounded-full bg-slate-200/80 border border-slate-300/60 text-xs font-bold text-slate-700">
             <button
               onClick={() => setAnnualBilling(false)}
-              className={`px-4 py-1.5 rounded-full transition-all ${
-                !annualBilling
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
+              className={`px-4 py-1.5 rounded-full transition-all ${!annualBilling
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
+                }`}
             >
               Monthly billing
             </button>
             <button
               onClick={() => setAnnualBilling(true)}
-              className={`px-4 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${
-                annualBilling
-                  ? "bg-[#3D54F5] text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
+              className={`px-4 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${annualBilling
+                ? "bg-[#3D54F5] text-white shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
+                }`}
             >
               <span>Annual billing</span>
               <span className="text-[10px] bg-[#54D2B9] text-slate-950 px-1.5 py-0.5 rounded-full font-black">
@@ -79,7 +77,7 @@ export const PricingSection: React.FC = () => {
               {/* Pill-Style Feature Labels */}
               <div className="space-y-3 mb-8">
                 {[
-                  "Up to 5 active deal pipelines",
+                  "Up to 2 active deal pipelines",
                   "Universal Deal Inbox extraction",
                   "Basic Money Leak detection",
                   "SAC 998365 GST tax invoices",
