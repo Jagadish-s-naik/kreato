@@ -65,15 +65,15 @@ export const SignInForm: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full bg-white text-slate-900 font-sans flex flex-col justify-center items-center px-4 sm:px-6 py-12">
-      <div className="w-full max-w-[400px]">
+      <div className="w-full max-w-[380px] sm:max-w-[400px]">
         {/* Centered Kreato Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 group mb-6">
-            <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105">
+        <div className="flex flex-col items-center mb-7">
+          <Link href="/" className="inline-flex items-center gap-2.5 group mb-5">
+            <div className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105">
               <img
                 src="/kreato-logo.png"
                 alt="Kreato"
-                className="w-9 h-9 object-contain"
+                className="w-8 h-8 object-contain"
               />
             </div>
             <span className="font-extrabold text-2xl text-slate-950 tracking-tight">
@@ -82,14 +82,14 @@ export const SignInForm: React.FC = () => {
           </Link>
 
           {/* Centered Heading */}
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight text-center">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight text-center">
             Welcome back!
           </h1>
-          <div className="mt-2 text-sm text-slate-500 text-center">
+          <div className="mt-2 text-sm text-slate-500 text-center font-normal">
             New to Kreato?{" "}
             <Link
               href="/signup"
-              className="text-slate-900 font-semibold hover:underline"
+              className="text-slate-950 font-semibold hover:underline"
             >
               Sign up.
             </Link>
@@ -104,7 +104,7 @@ export const SignInForm: React.FC = () => {
         )}
 
         {/* Clean Form directly on pure white background (No heavy card enclosure) */}
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {/* Email input */}
           <div>
             <input
@@ -113,7 +113,7 @@ export const SignInForm: React.FC = () => {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-13 px-4 rounded-xl bg-white border border-slate-200 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#4056F4] focus:ring-2 focus:ring-[#8AA4FF]/40 transition-all"
+              className="w-full h-12 px-4 rounded-xl bg-white border border-slate-200 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#4056F4] focus:ring-2 focus:ring-[#8AA4FF]/40 transition-all font-normal"
             />
           </div>
 
@@ -125,7 +125,7 @@ export const SignInForm: React.FC = () => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-13 px-4 pr-11 rounded-xl bg-white border border-slate-200 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#4056F4] focus:ring-2 focus:ring-[#8AA4FF]/40 transition-all"
+              className="w-full h-12 px-4 pr-11 rounded-xl bg-white border border-slate-200 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#4056F4] focus:ring-2 focus:ring-[#8AA4FF]/40 transition-all font-normal"
             />
             <button
               type="button"
@@ -172,7 +172,7 @@ export const SignInForm: React.FC = () => {
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-slate-200" />
           </div>
-          <span className="relative bg-white px-3 text-xs text-slate-400 font-medium">
+          <span className="relative bg-white px-3 text-xs text-slate-400 font-medium select-none">
             or
           </span>
         </div>
