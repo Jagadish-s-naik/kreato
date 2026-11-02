@@ -1,6 +1,10 @@
 # Kreato — Engineering & Architecture Documentation
 
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-kreato--beta.vercel.app-4056F4?style=for-the-badge&logo=vercel&logoColor=white)](http://kreato-beta.vercel.app/)
+
 Kreato is an income defense and deal follow-through automation platform built specifically for Indian creators (10k–500k followers). It converts ambiguous WhatsApp, Instagram DM, and brand email collaboration pitches into legally protective terms, fair market pricing, and automated follow-through.
+
+* **Live Demo**: [http://kreato-beta.vercel.app/](http://kreato-beta.vercel.app/)
 
 ---
 
@@ -52,4 +56,3 @@ For dated updates on recent feature implementations and system changes, consult:
 - **Deal Memo**: A 1-page plain-language agreement summary with a single-use 32-byte cryptographic token allowing brand managers to accept terms without logging in.
 - **Effective Clock**: A client-side simulated time offset (`sim_days_offset`) enabling creators to test overdue scenarios (e.g. 45 days past due) without altering real server dates.
 - **Simulated Benchmark Data**: Static, representative rate cards across 12 niches, 4 follower tiers, and 5 deliverable formats, always visibly labeled with "Simulated benchmark data".
-
